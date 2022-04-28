@@ -13,6 +13,8 @@ incdir = include_directories(
 executable(
     'main',
     'src/main.cpp',
+    'src/bitmap.cpp',
+    'src/image_formatters.cpp',
     include_directories : incdir,
     dependencies: []
 )
