@@ -1,14 +1,14 @@
 #pragma once
 
-#include <string>
+#include <vector>
 #include <bitmap.hpp>
+#include <string>
 
 
 namespace jr{
 namespace img{
 
-
-auto from_ppm(std::string const& path) -> Bitmap;
+auto read_ppm(std::string const& path) -> Bitmap;
 
 
 }
