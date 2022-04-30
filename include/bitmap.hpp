@@ -4,16 +4,19 @@
 #include <cstdio>
 #include <algorithm>
 #include <memory>
+#include <utils.h>
 
 namespace jr{
 namespace img{
 
 enum class ImageFormatting{
-    RBG
+    GRAYSCALE,
+    RBG,
 };
 
 class Bitmap{
-    std::size_t _h, _w, _d;
+
+    jr::vector3_size _size;
 
     ImageFormatting _format;
 
@@ -24,19 +27,18 @@ public:
  
     Bitmap();
 
+    Bitmap(const jr::vector3_size size);
+
     Bitmap(const std::size_t h, const std::size_t w, const std::size_t d);
 
-    Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, std::unique_ptr<std::uint8_t[]> data);
+    auto set_format(const ImageFormatting format) noexcept -> void;
 
-    Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, const ImageFormatting format);
-
-    Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, const ImageFormatting format, std::unique_ptr<std::uint8_t[]> data);
-    
-    auto set_format(ImageFormatting format) noexcept -> void;
+    auto set_size(const jr::vector3_size size) noexcept -> void;
     
     auto set_data(std::unique_ptr<std::uint8_t[]> data) noexcept -> void;
 
     auto size() const noexcept -> std::size_t;
+
 
 struct Iterator{
     using iterator_category=std::forward_iterator_tag;
@@ -45,23 +47,31 @@ struct Iterator{
     using pointer=value_type*;
     using reference=value_type&;
 
-    Iterator(pointer ptr);
+    Iterator(pointer ptr):_ptr(ptr){}
 
-    auto operator*() -> reference;
+    auto operator*() -> reference {return *_ptr;};
 
-    auto operator->() -> pointer;
-    auto operator++() -> Iterator& ;
+    auto operator->() -> pointer {return _ptr;};
+    auto operator++() -> Iterator& { ++_ptr; return *this; };//preincrement ++it
 
-    friend auto operator==(Iterator const& rhs, Iterator const& lhs);
-    friend auto operator!=(Iterator const& rhs, Iterator const& lhs);
+    friend auto operator+(Iterator rhs, std::size_t shift){ 
+        Iterator it=rhs; 
+        it._ptr+=shift;
+        return it; 
+    };
+    
+    friend auto operator==(Iterator const& rhs, Iterator const& lhs){ return rhs._ptr==lhs._ptr; };
+    friend auto operator!=(Iterator const& rhs, Iterator const& lhs){ return rhs._ptr!=lhs._ptr; };
 
 private:
     pointer _ptr;
 };
 
-    // auto begin() noexcept -> Iterator;
+    auto operator[](std::size_t y) noexcept -> Iterator;
 
-    // auto end() noexcept -> Iterator;
+    auto begin() noexcept -> Iterator;
+
+    auto end() noexcept -> Iterator;
     
 };
 
