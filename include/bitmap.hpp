@@ -27,18 +27,21 @@ public:
  
     Bitmap();
 
-    Bitmap(const jr::vector3_size size);
+    Bitmap(jr::vector3_size const size);
 
-    Bitmap(const std::size_t h, const std::size_t w, const std::size_t d);
+    Bitmap(std::size_t const h, std::size_t const w, std::size_t const d);
 
-    auto set_format(const ImageFormatting format) noexcept -> void;
+    auto set_format(ImageFormatting const format) noexcept -> void;
 
-    auto set_size(const jr::vector3_size size) noexcept -> void;
+    auto set_size(jr::vector3_size const size) noexcept -> void;
     
     auto set_data(std::unique_ptr<std::uint8_t[]> data) noexcept -> void;
 
     auto size() const noexcept -> std::size_t;
 
+    auto get(jr::vector3_size const vec) noexcept -> uint8_t&;
+
+    auto get(jr::vector3_size const vec) const noexcept -> uint8_t const&;
 
 struct Iterator{
     using iterator_category=std::forward_iterator_tag;

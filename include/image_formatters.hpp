@@ -8,8 +8,8 @@
 namespace jr{
 namespace img{
 
-auto read_ppm(std::string const& path) -> Bitmap;
-
+auto read_ppm(std::fstream&& fstr) -> Bitmap;
 
 }
+
 }

@@ -1,6 +1,7 @@
 #include <bitmap.hpp>
 #include <algorithm>
 #include <numeric>
+#include <cassert>
 
 
 namespace jr{
@@ -9,31 +10,15 @@ namespace img{
 
 Bitmap::Bitmap()=default;
 
-Bitmap::Bitmap(const jr::vector3_size size): _size(size){}
+Bitmap::Bitmap(jr::vector3_size const size): _size(size){}
 
-Bitmap::Bitmap(const std::size_t h, const std::size_t w, const std::size_t d){}
+Bitmap::Bitmap(std::size_t const h, std::size_t const w, std::size_t const d){}
 
-// Bitmap::Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, std::unique_ptr<std::uint8_t[]> data):
-// Bitmap(h, w, d){
-//     _data=std::move(data);
-// }
-
-// Bitmap::Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, const ImageFormatting format):
-// Bitmap(h, w, d){
-//     _format=format;
-// }
-
-// Bitmap::Bitmap(const std::size_t h, const std::size_t w, const std::size_t d, const ImageFormatting format, std::unique_ptr<std::uint8_t[]> data):
-// Bitmap(w, h, d, std::move(data)){
-//     _format=format;
-// }
-
-
-auto Bitmap::set_format(const ImageFormatting format) noexcept -> void{
+auto Bitmap::set_format(ImageFormatting const format) noexcept -> void{
     _format=format;
 }
 
-auto Bitmap::set_size(const jr::vector3_size size) noexcept -> void{
+auto Bitmap::set_size(jr::vector3_size const size) noexcept -> void{
     _size=size;
 }
 
@@ -45,14 +30,27 @@ auto Bitmap::size() const noexcept -> std::size_t{
     return _size.dim_product();
 }
 
-auto Bitmap::operator[](std::size_t y) noexcept -> Iterator{
-    return begin() + y*_size.y();
+
+auto Bitmap::get(jr::vector3_size const vec) noexcept -> uint8_t&{
+    assert(vec.x()>0 && vec.x()<_size.x() && vec.y()>0 && vec.y()<_size.y() && vec.z()>0 && vec.z()<_size.z());
+
+    // return
 }
 
-// auto Bitmap::operator[](std::size_t y) noexcept -> std::uint8_t&{
+auto Bitmap::get(jr::vector3_size const vec) const noexcept -> uint8_t const&{
+    assert(vec.x()>0 && vec.x()<_size.x() && vec.y()>0 && vec.y()<_size.y() && vec.z()>0 && vec.z()<_size.z());
 
-// }
+    //return 
+}
 
+
+
+
+
+
+auto Bitmap::operator[](std::size_t const y) noexcept -> Iterator{
+    return begin() + y*_size.y();
+}
 
 auto Bitmap::begin() noexcept -> Iterator{
     return Iterator(_data.get());
