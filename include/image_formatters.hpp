@@ -10,6 +10,8 @@ namespace img{
 
 auto read_ppm(std::fstream&& fstr) -> Bitmap;
 
+
+
 }
 
 }

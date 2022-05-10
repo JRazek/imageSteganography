@@ -15,15 +15,11 @@ enum class ImageFormatting{
 };
 
 class Bitmap{
-
-    jr::vector3_size _size;
-
-    ImageFormatting _format;
-
-    std::unique_ptr<std::uint8_t[]> _data;
-    
 public:
- 
+
+    using data_type=uint8_t;
+
+    using Container=std::vector<data_type>;
  
     Bitmap();
 
@@ -33,48 +29,33 @@ public:
 
     auto set_format(ImageFormatting const format) noexcept -> void;
 
+    auto format() const noexcept -> ImageFormatting;
+
     auto set_size(jr::vector3_size const size) noexcept -> void;
     
-    auto set_data(std::unique_ptr<std::uint8_t[]> data) noexcept -> void;
+    auto set_data(Container const& data) noexcept -> void;
+
+    auto set_data(Container&& data) noexcept -> void;
 
     auto size() const noexcept -> std::size_t;
 
-    auto get(jr::vector3_size const vec) noexcept -> uint8_t&;
+    auto get(jr::vector3_size const vec) noexcept -> data_type&;
 
-    auto get(jr::vector3_size const vec) const noexcept -> uint8_t const&;
+    auto get(jr::vector3_size const vec) const noexcept -> data_type const&;
 
-struct Iterator{
-    using iterator_category=std::forward_iterator_tag;
-    using differece_type=std::ptrdiff_t;
-    using value_type=std::uint8_t;
-    using pointer=value_type*;
-    using reference=value_type&;
+    auto begin() noexcept -> Container::iterator;
 
-    Iterator(pointer ptr):_ptr(ptr){}
-
-    auto operator*() -> reference {return *_ptr;};
-
-    auto operator->() -> pointer {return _ptr;};
-    auto operator++() -> Iterator& { ++_ptr; return *this; };//preincrement ++it
-
-    friend auto operator+(Iterator rhs, std::size_t shift){ 
-        Iterator it=rhs; 
-        it._ptr+=shift;
-        return it; 
-    };
+    auto end() noexcept -> Container::iterator;
     
-    friend auto operator==(Iterator const& rhs, Iterator const& lhs){ return rhs._ptr==lhs._ptr; };
-    friend auto operator!=(Iterator const& rhs, Iterator const& lhs){ return rhs._ptr!=lhs._ptr; };
+    inline auto getIndex(jr::vector3_size const vec) const noexcept -> std::size_t;
 
 private:
-    pointer _ptr;
-};
 
-    auto operator[](std::size_t y) noexcept -> Iterator;
+    jr::vector3_size _size;
 
-    auto begin() noexcept -> Iterator;
+    ImageFormatting _format;
 
-    auto end() noexcept -> Iterator;
+    Container _data;
     
 };
 

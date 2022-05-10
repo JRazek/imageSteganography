@@ -40,14 +40,23 @@ auto read_ppm(std::fstream&& fstr) -> Bitmap{
                 size.z()=d;
                 bmp.set_size(size);
             }else{
-                
+                if(bmp.format()==ImageFormatting::RBG){
+                    
+                }else if(bmp.format()==ImageFormatting::GRAYSCALE){
+
+                }
             }
             ++i;
         }
     }
     
     
-    
+   
+
+    for(auto it=bmp.begin(); it!=bmp.end(); ++it){
+        
+    }
+
 
     return bmp;
 }
