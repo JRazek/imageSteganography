@@ -10,11 +10,22 @@ incdir = include_directories(
     'src',
 )
 
-executable(
+build_args=''
+
+if get_option('build')=='release'
+    # build_args+= '-DNDEBUG'
+else
+    # build_args+= '-Og'
+endif
+
+
+exec=executable(
     'main',
     'src/main.cpp',
     'src/bitmap.cpp',
     'src/image_formatters.cpp',
     include_directories : incdir,
+    # cpp_args: build_args,
     dependencies: []
 )
+
