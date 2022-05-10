@@ -8,11 +8,21 @@ namespace jr{
 namespace img{
 
 
-Bitmap::Bitmap()=default;
 
-Bitmap::Bitmap(jr::vector3_size const size): _size(size){}
+Bitmap::Bitmap(Bitmap const& bmp) noexcept = default;
 
-Bitmap::Bitmap(std::size_t const h, std::size_t const w, std::size_t const d){}
+Bitmap::Bitmap(Bitmap&& bmp) noexcept = default;
+
+Bitmap::Bitmap() noexcept = default;
+
+Bitmap::Bitmap(jr::vector3_size const size) noexcept: 
+_size(size),
+_data(size.dim_product())
+{}
+
+Bitmap::Bitmap(std::size_t const w, std::size_t const h, std::size_t const d) noexcept:
+Bitmap(jr::vector3_size{w, h, d})
+{}
 
 auto Bitmap::set_format(ImageFormatting const format) noexcept -> void{
     _format=format;
@@ -20,10 +30,6 @@ auto Bitmap::set_format(ImageFormatting const format) noexcept -> void{
 
 auto Bitmap::format() const noexcept -> ImageFormatting{
     return _format;
-}
-
-auto Bitmap::set_size(jr::vector3_size const size) noexcept -> void{
-    _size=size;
 }
 
 auto Bitmap::set_data(Container const& data) noexcept -> void{
@@ -41,12 +47,11 @@ auto Bitmap::size() const noexcept -> std::size_t{
 }
 
 auto Bitmap::get(jr::vector3_size const vec) noexcept -> data_type&{
-    return _data[getIndex(vec)];
+    return _data[get_index(vec)];
 }
 
 auto Bitmap::get(jr::vector3_size const vec) const noexcept -> data_type const&{
-    assert(vec.x()>0 && vec.x()<_size.x() && vec.y()>0 && vec.y()<_size.y() && vec.z()>0 && vec.z()<_size.z());
-    return _data[getIndex(vec)];
+    return _data[get_index(vec)];
 }
 
 
@@ -58,10 +63,25 @@ auto Bitmap::end() noexcept -> Container::iterator{
     return _data.end();
 }
 
-inline auto Bitmap::getIndex(jr::vector3_size const vec) const noexcept -> std::size_t{
-    assert(vec.x()>0 && vec.x()<_size.x() && vec.y()>0 && vec.y()<_size.y() && vec.z()>0 && vec.z()<_size.z());
+auto Bitmap::get_index(jr::vector3_size const vec) const noexcept -> std::size_t{
+    assert(vec.x()>=0 && vec.x()<_size.x() && vec.y()>=0 && vec.y()<_size.y() && vec.z()>=0 && vec.z()<_size.z());
+
     return vec.y()*_size.z()*_size.x() + vec.x()*_size.z() + vec.z();
 }
+
+auto Bitmap::getVector(std::size_t const index) const noexcept -> jr::vector3_size{
+    assert(index < _size.dim_product());
+
+    const auto x=(index%_size.y())/_size.x();
+    const auto y=index/(_size.z()*_size.x());
+    const auto z=index%_size.z();
+    return {x, y, z};
+}
+
+auto Bitmap::operator=(Bitmap const& bmp) noexcept -> Bitmap& = default;
+
+auto Bitmap::operator=(Bitmap&& bmp) noexcept -> Bitmap& = default;
+
 
 }
 }

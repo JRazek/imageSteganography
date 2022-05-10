@@ -21,17 +21,20 @@ public:
 
     using Container=std::vector<data_type>;
  
-    Bitmap();
 
-    Bitmap(jr::vector3_size const size);
+    Bitmap(Bitmap const& bmp) noexcept;
 
-    Bitmap(std::size_t const h, std::size_t const w, std::size_t const d);
+    Bitmap(Bitmap&& bmp) noexcept;
+
+    Bitmap() noexcept;
+
+    Bitmap(jr::vector3_size const size) noexcept;
+
+    Bitmap(std::size_t const h, std::size_t const w, std::size_t const d) noexcept;
 
     auto set_format(ImageFormatting const format) noexcept -> void;
 
     auto format() const noexcept -> ImageFormatting;
-
-    auto set_size(jr::vector3_size const size) noexcept -> void;
     
     auto set_data(Container const& data) noexcept -> void;
 
@@ -47,11 +50,17 @@ public:
 
     auto end() noexcept -> Container::iterator;
     
-    inline auto getIndex(jr::vector3_size const vec) const noexcept -> std::size_t;
+    auto get_index(jr::vector3_size const vec) const noexcept -> std::size_t;
+
+    auto getVector(std::size_t const index) const noexcept -> jr::vector3_size;
+
+    auto operator=(Bitmap const& bmp) noexcept -> Bitmap&;
+
+    auto operator=(Bitmap&& bmp) noexcept -> Bitmap&;
 
 private:
 
-    jr::vector3_size _size;
+    jr::vector3_size _size;//possible to set only with constructor or move/copy operators. It helps to keep size of data entangled with this dimension.
 
     ImageFormatting _format;
 

@@ -24,11 +24,15 @@ public:
 
     constexpr static std::size_t size=N;
 
-    auto operator[](std::size_t i) noexcept -> T&{
+    vector(std::array<T, N> const& data): a(data){}
+
+    vector()=default;
+
+    auto operator[](std::size_t const i) noexcept -> T&{
         return a[i];
     }
 
-    auto operator[](std::size_t i) const noexcept -> T const&{
+    auto operator[](std::size_t const i) const noexcept -> T const&{
         return a[i];
     }
     
@@ -39,8 +43,14 @@ public:
     }
 };
 
-class vector3_size : public vector<3, std::size_t>{
+class vector3_size : public jr::vector<3, std::size_t>{
 public:
+    vector3_size(std::size_t const x, std::size_t const y, std::size_t const z): 
+    vector({x, y, z}) 
+    {}
+
+    vector3_size()=default;
+
     auto x() const noexcept -> std::size_t const&{
         return a[0];
     }
@@ -59,6 +69,8 @@ public:
     auto z() noexcept -> std::size_t&{
         return a[2];
     }
+
+
 };
 
 }

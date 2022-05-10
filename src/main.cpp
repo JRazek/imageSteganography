@@ -8,7 +8,7 @@ auto main()->int{
     
     Bitmap img(10, 10, 3);
     auto file=std::fstream("/home/user/CLionProjects/imageSteganography/test_resources/image.ppm");
-    read_ppm(std::move(file));
-    auto it=img.begin();
+
+    img=read_ppm(std::move(file));
 
 }
