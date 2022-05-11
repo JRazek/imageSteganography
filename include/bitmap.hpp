@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <memory>
-#include <utils.h>
+#include <utils.hpp>
 
 namespace jr{
 namespace img{

@@ -1,3 +1,4 @@
+#include <bits/stdint-uintn.h>
 #include <image_formatters.hpp>
 #include <bitmap.hpp>
 #include <vector>
@@ -5,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <array>
 
 namespace jr{
 namespace img{
@@ -62,6 +64,26 @@ auto read_ppm(std::fstream&& fstr) -> Bitmap{
     return bmp;
 }
 
+auto read_bmp(std::fstream&& fstr) -> Bitmap{
+	
+	Bitmap bmp(0,0,0);
+
+	std::array<uint8_t, 14> header;
+
+	std::size_t n=0;
+	uint8_t byte;
+	
+	while(fstr >> byte){
+		if(n<14) header[n]=byte;
+		else{
+
+		}
+	}
+
+
+
+	return bmp;
+}
 
 
 }
