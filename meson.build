@@ -10,12 +10,15 @@ incdir = include_directories(
     'src',
 )
 
-build_args=''
+build_args=[]
+link_args=[]
+
 
 if get_option('build')=='release'
-    # build_args+= '-DNDEBUG'
+    build_args += ['-DNDEBUG']
 else
-    # build_args+= '-Og'
+	build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address']
+	link_args += build_args 
 endif
 
 
@@ -25,7 +28,8 @@ exec=executable(
     'src/bitmap.cpp',
     'src/image_formatters.cpp',
     include_directories : incdir,
-    # cpp_args: build_args,
+    cpp_args: build_args,
+	link_args: link_args,
     dependencies: []
 )
 
