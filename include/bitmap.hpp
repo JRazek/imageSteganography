@@ -40,11 +40,13 @@ public:
 
     auto set_data(Container&& data) noexcept -> void;
 
-    auto size() const noexcept -> std::size_t;
+    auto size() const noexcept -> jr::vector3_size;
 
-    auto get(jr::vector3_size const vec) noexcept -> data_type&;
+    auto get(jr::vector3_size const vec) noexcept -> data_type;
 
-    auto get(jr::vector3_size const vec) const noexcept -> data_type const&;
+    auto get_ref(jr::vector3_size const vec) noexcept -> data_type&;
+
+    auto get_ref(jr::vector3_size const vec) const noexcept -> data_type const&;
 
     auto begin() noexcept -> Container::iterator;
 
@@ -64,6 +66,8 @@ private:
 
     ImageFormatting _format;
 
+	Container _header_data;
+
     Container _data;
     
 };
@@ -71,3 +75,4 @@ private:
 
 }
 }
+

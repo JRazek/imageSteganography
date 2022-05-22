@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <cstdio>
 #include <numeric>
 #include <algorithm>
@@ -70,7 +71,7 @@ public:
         return a[2];
     }
 
-
 };
 
 }
+

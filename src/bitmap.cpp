@@ -42,15 +42,21 @@ auto Bitmap::set_data(Container&& data) noexcept -> void{
     _data=std::move(data);
 }
 
-auto Bitmap::size() const noexcept -> std::size_t{
-    return _size.dim_product();
+auto Bitmap::size() const noexcept -> jr::vector3_size{
+	return _size;
 }
 
-auto Bitmap::get(jr::vector3_size const vec) noexcept -> data_type&{
+
+auto Bitmap::get(jr::vector3_size const vec) noexcept -> data_type{
     return _data[get_index(vec)];
 }
 
-auto Bitmap::get(jr::vector3_size const vec) const noexcept -> data_type const&{
+
+auto Bitmap::get_ref(jr::vector3_size const vec) noexcept -> data_type&{
+    return _data[get_index(vec)];
+}
+
+auto Bitmap::get_ref(jr::vector3_size const vec) const noexcept -> data_type const&{
     return _data[get_index(vec)];
 }
 
@@ -85,3 +91,4 @@ auto Bitmap::operator=(Bitmap&& bmp) noexcept -> Bitmap& = default;
 
 }
 }
+

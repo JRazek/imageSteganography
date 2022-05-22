@@ -12,3 +12,4 @@ auto main()->int{
     img=read_ppm(std::move(file));
 
 }
+
