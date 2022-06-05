@@ -1,3 +1,4 @@
+#include "utils.hpp"
 #include <image_formatters.hpp>
 #include <bitmap.hpp>
 #include <vector>
@@ -8,6 +9,8 @@
 #include <array>
 #include <stdexcept>
 #include <bitset>
+#include <range/v3/view.hpp>
+
 
 namespace jr{
 namespace img{
@@ -18,7 +21,7 @@ auto read_ppm(std::fstream&& fstr) -> Bitmap{
     auto string_to_format=[](std::string const& str) -> ImageFormatting{
         if(str=="P1" || str=="P4" ) return ImageFormatting::GRAYSCALE;
         else if(str=="P2" || str=="P5" ) return ImageFormatting::GRAYSCALE;
-        return ImageFormatting::RBG;
+        return ImageFormatting::RBG; //P3 P6
     };
 
     std::string line;
@@ -91,30 +94,52 @@ auto read_bmp(std::fstream&& fstr) -> Bitmap{
 }
 
 auto encode_message(Bitmap bitmap, std::vector<std::uint8_t> const& data) -> Bitmap{
-	auto information_size=data.size()*8;
-	auto shift=bitmap.size().dim_product()/information_size;
-	
-	if(shift==0) throw std::invalid_argument("cannot encode message larger than image!");
-	
-	std::bitset<8> data_bitset;
+	auto header_bytes=to_little_endianness_bytes<8>(data.size());
 
-	for(auto i=0u, index=0u; i<information_size; i++, index+=shift){
-		if(i%8==0){
-			data_bitset=std::bitset<8>(data[i/8]);
+	auto shift=(bitmap.size().dim_product()-8)/(data.size()*8);
+	if(!shift) throw std::invalid_argument("data is larger than image!");
+
+	auto it=bitmap.begin();
+	for(auto i=0;i<8;i++, ++it) *it=header_bytes[i];
+
+	for(auto b : data){
+		std::bitset<8> byte(b);
+
+		for(auto i=0u; i<8;i++, it+=shift){
+			auto bitmap_byte=std::bitset<8>(*it);
+			bitmap_byte[7]=byte[i];
+			
+			*it=bitmap_byte.to_ulong();
 		}
-		auto& image_byte=bitmap.get_ref(bitmap.getVector(index));
-
-		std::bitset<8> image_bitset(image_byte);
-		image_bitset[7]=data_bitset[i%8];
-
-		image_byte=image_bitset.to_ulong();
 	}
 
 	return bitmap;
 }
 
 auto decode_message(Bitmap const& bitmap) -> std::vector<std::uint8_t>{
-	return {}; 
+	auto it=bitmap.begin();
+	
+	auto data_size=bytes_to_little_endianess<std::size_t>(it, it+8); it+=8;
+	
+	auto shift=(bitmap.size().dim_product()-8)/(data_size*8);
+
+	if(!shift) throw std::invalid_argument("encoded image is corrupted!");
+
+	std::vector<std::uint8_t> data(data_size);
+
+	for(auto& data_byte_raw : data){
+
+		std::bitset<8> data_byte(data_byte_raw);
+
+		for(auto i=0u;i<8;i++,it+=shift){
+			auto bitmap_byte=std::bitset<8>(*it);
+			data_byte[i]=bitmap_byte[7];
+		}
+
+		data_byte_raw=data_byte.to_ulong();
+	}
+
+	return data;
 }
 
 }

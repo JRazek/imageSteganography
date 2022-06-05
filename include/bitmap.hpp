@@ -48,6 +48,10 @@ public:
 
     auto get_ref(jr::vector3_size const vec) const noexcept -> data_type const&;
 
+    auto begin() const noexcept -> Container::const_iterator;
+
+    auto end() const noexcept -> Container::const_iterator;
+
     auto begin() noexcept -> Container::iterator;
 
     auto end() noexcept -> Container::iterator;
@@ -59,6 +63,8 @@ public:
     auto operator=(Bitmap const& bmp) noexcept -> Bitmap&;
 
     auto operator=(Bitmap&& bmp) noexcept -> Bitmap&;
+
+    auto operator==(Bitmap const& bmp) noexcept -> bool;
 
 private:
 

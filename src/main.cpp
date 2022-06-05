@@ -9,7 +9,12 @@ auto main()->int{
     Bitmap img(10, 10, 3);
     auto file=std::fstream("/home/user/CLionProjects/imageSteganography/test_resources/image.ppm");
 
-    img=read_ppm(std::move(file));
+//    img=read_ppm(std::move(file));
 
+	img=encode_message(std::move(img), {1, 1, 2, 3, 45});
+
+	auto message=decode_message(img);
+
+	for(auto i : message) std::cout<<int(i)<<' ';
 }
 

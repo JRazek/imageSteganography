@@ -60,14 +60,13 @@ auto Bitmap::get_ref(jr::vector3_size const vec) const noexcept -> data_type con
     return _data[get_index(vec)];
 }
 
+auto Bitmap::begin() const noexcept -> Container::const_iterator{ return _data.cbegin(); }
 
-auto Bitmap::begin() noexcept -> Container::iterator{
-    return _data.begin();
-}
+auto Bitmap::end() const noexcept -> Container::const_iterator{ return _data.cend(); }
 
-auto Bitmap::end() noexcept -> Container::iterator{
-    return _data.end();
-}
+auto Bitmap::begin() noexcept -> Container::iterator{ return _data.begin(); }
+
+auto Bitmap::end() noexcept -> Container::iterator{ return _data.end(); }
 
 auto Bitmap::get_index(jr::vector3_size const vec) const noexcept -> std::size_t{
     assert(vec.x()>=0 && vec.x()<_size.x() && vec.y()>=0 && vec.y()<_size.y() && vec.z()>=0 && vec.z()<_size.z());
@@ -87,6 +86,12 @@ auto Bitmap::getVector(std::size_t const index) const noexcept -> jr::vector3_si
 auto Bitmap::operator=(Bitmap const& bmp) noexcept -> Bitmap& = default;
 
 auto Bitmap::operator=(Bitmap&& bmp) noexcept -> Bitmap& = default;
+
+auto Bitmap::operator==(Bitmap const& bmp) noexcept -> bool{
+	if(_size!=bmp.size()) return false;
+	auto mismatch=std::ranges::mismatch(_data, bmp._data);
+	return _data.end()==mismatch.in1;
+}
 
 
 }
