@@ -5,6 +5,9 @@
 #include <numeric>
 #include <algorithm>
 #include <ranges>
+#include <bit>
+#include <sys/types.h>
+
 
 namespace jr{
 
@@ -80,14 +83,16 @@ public:
 
 template<std::size_t size>
 auto to_little_endianness_bytes(std::integral auto n) -> std::vector<std::uint8_t> {
-	std::vector<std::uint8_t> bytes(size);
+    std::vector<std::uint8_t> bytes(size);
 
 	for(auto& b : bytes){
 		b=n&0xFFu;
 		n>>=8u;
 	}
 
-	return bytes;
+	if constexpr (std::endian::native==std::endian::little) std::ranges::reverse(bytes);
+
+    return bytes;
 }
 
 auto to_little_endianness_bytes(std::integral auto n) -> std::vector<std::uint8_t> { return to_little_endianness_bytes<sizeof(n)>(n); }
