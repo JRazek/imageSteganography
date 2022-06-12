@@ -24,14 +24,6 @@ Bitmap::Bitmap(std::size_t const w, std::size_t const h, std::size_t const d) no
 Bitmap(jr::vector3_size{w, h, d})
 {}
 
-auto Bitmap::set_format(ImageFormatting const format) noexcept -> void{
-    _format=format;
-}
-
-auto Bitmap::format() const noexcept -> ImageFormatting{
-    return _format;
-}
-
 auto Bitmap::set_data(Container const& data) noexcept -> void{
     assert(data.size()==_size.dim_product());
     _data=data;
@@ -47,7 +39,7 @@ auto Bitmap::size() const noexcept -> jr::vector3_size{
 }
 
 
-auto Bitmap::get(jr::vector3_size const vec) noexcept -> data_type{
+auto Bitmap::get(jr::vector3_size const vec) const noexcept -> data_type{
     return _data[get_index(vec)];
 }
 
@@ -93,6 +85,10 @@ auto Bitmap::operator==(Bitmap const& bmp) noexcept -> bool{
 	return _data.end()==mismatch.in1;
 }
 
+
+auto PPM::format() const noexcept -> PPM_Format{ return format_; }
+
+PPM::PPM(Bitmap&& bmp):Base(bmp){}
 
 }
 }

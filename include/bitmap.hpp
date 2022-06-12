@@ -9,11 +9,6 @@
 namespace jr{
 namespace img{
 
-enum class ImageFormatting{
-    GRAYSCALE,
-    RBG,
-};
-
 class Bitmap{
 public:
 
@@ -22,9 +17,9 @@ public:
     using Container=std::vector<data_type>;
  
 
-    Bitmap(Bitmap const& bmp) noexcept;
+    Bitmap(Bitmap const&) noexcept;
 
-    Bitmap(Bitmap&& bmp) noexcept;
+    Bitmap(Bitmap&&) noexcept;
 
     Bitmap() noexcept;
 
@@ -32,17 +27,13 @@ public:
 
     Bitmap(std::size_t const h, std::size_t const w, std::size_t const d) noexcept;
 
-    auto set_format(ImageFormatting const format) noexcept -> void;
-
-    auto format() const noexcept -> ImageFormatting;
-    
     auto set_data(Container const& data) noexcept -> void;
 
     auto set_data(Container&& data) noexcept -> void;
 
     auto size() const noexcept -> jr::vector3_size;
 
-    auto get(jr::vector3_size const vec) noexcept -> data_type;
+    auto get(jr::vector3_size const vec) const noexcept -> data_type;
 
     auto get_ref(jr::vector3_size const vec) noexcept -> data_type&;
 
@@ -60,22 +51,39 @@ public:
 
     auto getVector(std::size_t const index) const noexcept -> jr::vector3_size;
 
-    auto operator=(Bitmap const& bmp) noexcept -> Bitmap&;
+    auto operator=(Bitmap const&) noexcept -> Bitmap&;
 
-    auto operator=(Bitmap&& bmp) noexcept -> Bitmap&;
+    auto operator=(Bitmap&&) noexcept -> Bitmap&;
 
-    auto operator==(Bitmap const& bmp) noexcept -> bool;
+    auto operator==(Bitmap const&) noexcept -> bool;
 
 private:
 
-    jr::vector3_size _size;//possible to set only with constructor or move/copy operators. It helps to keep size of data entangled with this dimension.
+    jr::vector3_size _size{};//possible to set only with constructor or move/copy operators. It helps to keep size of data entangled with this dimension.
 
-    ImageFormatting _format;
+	Container _header_data{};
 
-	Container _header_data;
-
-    Container _data;
+    Container _data{};
     
+};
+
+class PPM : public Bitmap{
+public:
+
+	using Bitmap::Bitmap;
+	PPM(Bitmap&&);
+
+	enum class PPM_Format{
+		P1, P4,
+		P2, P5,
+		P3, P6,
+	};
+
+	auto format() const noexcept -> PPM_Format;
+
+private:
+	using Base=Bitmap;
+	PPM_Format format_;
 };
 
 

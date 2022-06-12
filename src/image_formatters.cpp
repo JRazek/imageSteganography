@@ -1,6 +1,8 @@
 #include "utils.hpp"
+#include <cstdint>
 #include <image_formatters.hpp>
 #include <bitmap.hpp>
+#include <istream>
 #include <vector>
 #include <fstream>
 #include <string>
@@ -9,86 +11,108 @@
 #include <array>
 #include <stdexcept>
 #include <bitset>
-#include <range/v3/view.hpp>
+#include <cassert>
+#include <optional>
 
 
 namespace jr{
 namespace img{
 
+//[TODO fix - format ignores whitespaces :)]
 
-auto read_ppm(std::fstream&& fstr) -> Bitmap{
-
-    auto string_to_format=[](std::string const& str) -> ImageFormatting{
-        if(str=="P1" || str=="P4" ) return ImageFormatting::GRAYSCALE;
-        else if(str=="P2" || str=="P5" ) return ImageFormatting::GRAYSCALE;
-        return ImageFormatting::RBG; //P3 P6
-    };
-
+auto read_ppm(std::istream&& str) -> PPM{
     std::string line;
-    auto i=0u;
     std::size_t bmp_index=0u;
-    Bitmap bmp(0,0,0);
+    PPM bmp(0,0,0);
     jr::vector3_size size;
 
-    while (std::getline(fstr, line)){
-        line=line.substr(0, line.find('#'));
-        if(!line.empty()){
-            auto stream=std::stringstream(line);
-            std::cerr<<line<<'\n';
-            if(i==0){
-                std::string format_str; stream>>format_str;
-                bmp.set_format(string_to_format(format_str));
-            }
-            else if(i==1){
-                std::size_t w, h; stream>>w>>h;
-                size.x()=w;
-                size.y()=h;
-            }
-            else if(i==2){
-                std::size_t d; stream>>d;
-                size.z()=d;
-                bmp=Bitmap(size);
-            }
-            else if(bmp.format()==ImageFormatting::RBG){
-                uint8_t r, g, b; stream>>r>>g>>b;
-                bmp.get_ref(bmp.getVector(bmp_index))=r;
-                bmp.get_ref(bmp.getVector(bmp_index+1))=g;
-                bmp.get_ref(bmp.getVector(bmp_index+2))=b;
-                bmp_index+=3;
-            }
-            else if(bmp.format()==ImageFormatting::GRAYSCALE){
-                uint8_t b; stream>>b;
-                bmp.get_ref(bmp.getVector(bmp_index))=b;
-                bmp_index++;
-            }
-            ++i;
-        }
-    }
+	using Format=PPM::PPM_Format;
+
+    auto string_to_format=[](std::string const& str) -> Format{
+		//unsupported if(str=="P1") return Format::P1;
+		if(str=="P2") return Format::P2;
+		if(str=="P3") return Format::P3;
+		//unsupported if(str=="P4") return Format::P4;
+		//unsupported if(str=="P5") return Format::P5;
+		//unsupported if(str=="P6") return Format::P6;
+
+		throw std::invalid_argument("unsupported "+str+" format");
+    };
+
+	std::string format_string; str>>format_string;
+	Format format=string_to_format(format_string);
+
+	while(!str.eof()){
+		
+	}
 
     return bmp;
 }
 
-auto read_bmp(std::fstream&& fstr) -> Bitmap{
+auto read_ppm(std::string const& file) -> PPM{
+	std::fstream stream(file, std::ios::in);
+	return read_ppm(std::move(stream));
+}
+
+auto write_ppm(PPM const& ppm, std::ostream&& fstr) -> void{
+	using Format=PPM::PPM_Format;
+
+    auto format_to_string=[](Format const format) -> std::string{
+		//unsupported if(format==Format::P1) return "P1";
+		if(format==Format::P2) return "P2";
+		if(format==Format::P3) return "P3";
+		//unsupported if(format==Format::P4) return "P4";
+		//unsupported if(format==Format::P5) return "P5";
+		//unsupported if(format==Format::P6) return "P6";
+
+		throw std::invalid_argument("unsupported "+std::to_string(static_cast<int>(format))+" format");
+    };
+
+	fstr<<format_to_string(ppm.format())<<'\n';
+
+	fstr<<ppm.size().x()<<' '<<ppm.size().y()<<'\n';
+
+	fstr<<ppm.size().z()<<'\n';
+
+	for(auto row=0u; row<ppm.size().y(); row++){
+		for(auto col=0u; col<ppm.size().x(); col++){
+			for(auto canal=0u; canal<ppm.size().z(); canal++){
+				auto val=ppm.get({col, row, canal});
+				fstr<<std::to_string(val)<<' ';
+			}
+		}
+		fstr<<'\n';
+	}
+}
+
+auto read_bmp(std::istream&& str) -> Bitmap{
+
+	std::array<std::uint8_t, 14> header;
+
+	str.read(reinterpret_cast<char*>(header.data()), 14);
+
+	struct BmpHeader{
+		std::uint32_t size;
+		std::uint32_t first_data_byte;
+
+		std::uint16_t reserved1;
+		std::uint16_t reserved2;
+		BmpHeader(std::array<std::uint8_t, 14> const& header){
+			std::string format(header.begin(), header.begin()+2);
+			if(format!="BM") throw std::invalid_argument("invalid bmp format");
+			
+			size=bytes_to_little_endianess<std::uint32_t>(header.begin()+2, header.begin()+4);
+			first_data_byte=bytes_to_little_endianess<std::uint32_t>(header.begin()+10, header.begin()+14);
+
+			reserved1=bytes_to_little_endianess<std::uint16_t>(header.begin()+6, header.begin()+8);
+			reserved2=bytes_to_little_endianess<std::uint16_t>(header.begin()+8, header.begin()+10);
+		}
+	};
+
 	
 	Bitmap bmp(0,0,0);
 
-	std::array<uint8_t, 14> header;
-	
-	auto validate_header=[](auto const& header){
-	
-	};
 
-	std::size_t n=0;
-	uint8_t byte;
-	
-	while(fstr >> byte){
-		if(n==14) validate_header(header);
-
-		if(n<14) header[n]=byte;
-		else{
-		
-		}
-	}
 
 	return bmp;
 }
@@ -141,6 +165,9 @@ auto decode_message(Bitmap const& bitmap) -> std::vector<std::uint8_t>{
 
 	return data;
 }
+
+
+
 
 }
 }
