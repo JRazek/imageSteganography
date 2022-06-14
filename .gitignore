@@ -3,3 +3,4 @@ compile
 .vscode
 .idea
 test_resources
+.cache

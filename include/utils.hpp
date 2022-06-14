@@ -2,11 +2,12 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <iterator>
 #include <numeric>
 #include <algorithm>
 #include <ranges>
 #include <bit>
-#include <sys/types.h>
+#include <iterator>
 
 
 namespace jr{
@@ -97,19 +98,33 @@ auto to_little_endianness_bytes(std::integral auto n) -> std::vector<std::uint8_
 
 auto to_little_endianness_bytes(std::integral auto n) -> std::vector<std::uint8_t> { return to_little_endianness_bytes<sizeof(n)>(n); }
 
-template<std::integral T>
-auto bytes_to_little_endianess(std::bidirectional_iterator auto low, std::bidirectional_iterator auto high) -> T {
+
+template<
+std::integral T,
+typename Range
+>
+auto bytes_to_little_endianess(Range range) -> T requires
+std::ranges::input_range<Range>
+&&
+std::ranges::bidirectional_range<Range>
+{
 	auto n=T(0);
 
-	for(auto const b : std::ranges::subrange{low, high} | std::ranges::views::reverse){
+	for(auto const b : range | std::ranges::views::reverse){
 		n<<=8u;
 		n|=b;
 	}
-
 	return n;
 }
 
-template<std::integral T>
-auto bytes_to_little_endianess(std::vector<std::uint8_t> const& bytes) -> T { return bytes_to_little_endianess<T>(bytes.cbegin(), bytes.cend()); }
+template<
+std::integral T,
+std::input_iterator Iterator 
+>
+auto bytes_to_little_endianess(Iterator low, std::size_t size) -> T {
+	auto high=low; std::advance(low, size);
+	return bytes_to_little_endianess<T>(std::ranges::subrange{low, high}); 
+}
+
 }
 
