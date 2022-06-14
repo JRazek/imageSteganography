@@ -52,7 +52,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, shift)){
 			auto bitmap_byte=std::bitset<8>(*out_target);
-			bitmap_byte[7]=message_byte_bitset[i];
+			bitmap_byte[0]=message_byte_bitset[i];
 			
 			*out_target=bitmap_byte.to_ulong();
 		}
@@ -89,7 +89,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 		for(auto i=0u;i<8;i++, std::ranges::advance(in_it, shift)){
 			auto bitmap_byte=std::bitset<8>(*in_it);
-			data_byte[i]=bitmap_byte[7];
+			data_byte[i]=bitmap_byte[0];
 		}
 
 		*out_it=data_byte.to_ulong();
