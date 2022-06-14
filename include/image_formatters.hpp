@@ -16,7 +16,9 @@ auto encode_bmp(std::string const& input_path, std::string const& output_path, s
 
 auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
 
-auto decode_bmp(std::istream&& str) -> std::vector<std::uint8_t>;
+auto decode_bmp(std::string const& input_path) -> std::vector<std::uint8_t>;
+
+auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>;
 
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
@@ -72,7 +74,9 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	auto target_size=std::ranges::distance(in);
 
 	auto data_size=bytes_to_little_endianess<std::size_t>(in | std::views::take(8));
-	
+
+	if(!data_size) throw std::invalid_argument("encoded image is corrupted!");
+
 	auto shift=(target_size-8)/(data_size*8);
 
 	if(!shift) throw std::invalid_argument("encoded image is corrupted!");

@@ -21,7 +21,7 @@ auto to_little_endianness_bytes(std::integral auto n) -> std::vector<std::uint8_
 		n>>=8u;
 	}
 
-	if constexpr (std::endian::native==std::endian::little) std::ranges::reverse(bytes);
+	if constexpr (std::endian::native!=std::endian::little) std::ranges::reverse(bytes);
 
     return bytes;
 }

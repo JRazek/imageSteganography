@@ -16,7 +16,9 @@ auto main()->int{
 
 	encode_bmp(file, file2, message);
 
-//	decode_bmp(u);
+	auto res=decode_bmp(file2);
 
+	std::string s(res.begin(), res.end());
+	std::cout<<s<<'\n';
 }
 
