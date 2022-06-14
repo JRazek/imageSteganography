@@ -6,83 +6,65 @@
 #include <iterator>
 #include <bitset>
 #include <iterator>
+#include <cassert>
 
 
 namespace jr{
 namespace img{
 
-auto encode_bmp(std::string const& path, std::vector<std::uint8_t> const& data) -> void;
+auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& data) -> void;
 
-auto encode_bmp(std::iostream&& str, std::vector<std::uint8_t> const& data) -> void;
+auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
 
 auto decode_bmp(std::istream&& str) -> std::vector<std::uint8_t>;
 
-template<typename Input, typename Output>
-auto encode_message(Input in, std::uint32_t target_size, Output out, std::vector<std::uint8_t> const& data) -> void;
-
-
-template<typename Range, typename OutputIterator>
-auto decode_message(Range in, OutputIterator out_it) -> void;
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////VIEWER DISCRETION IS ADVISED/////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-template<typename Input, typename Output
->
-auto encode_message(Input in, std::uint32_t target_size, Output out, std::vector<std::uint8_t> const& data) -> void
+template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
+auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
 requires 
-std::input_iterator<Input>
+std::ranges::input_range<InputTargetRange>
 &&
-std::output_iterator<Output, std::uint8_t>
+std::ranges::input_range<InputMessageRange>
 &&
-std::same_as<typename Input::value_type, std::uint8_t>
-&& 
-std::same_as<typename Output::value_type, std::uint8_t>
+std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
+&&
+std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
+&&
+std::output_iterator<OutputIterator, std::uint8_t>
 {
-	auto header_bytes=to_little_endianness_bytes<8>(data.size());
-	
-	auto shift=(target_size-8)/(data.size()*8);
+	auto target_size=std::ranges::distance(in_target);
+	auto message_size=std::ranges::distance(in_message);
 
-	for(auto i=0;i<8;i++, ++out) *out=header_bytes[i];
+	assert(target_size && message_size);
 
-	for(auto b : data){
-		std::bitset<8> byte(b);
+	std::ranges::copy(std::begin(in_target), std::end(in_target), out_target);
 
-		if constexpr (std::bidirectional_iterator<Input> && std::bidirectional_iterator<Output>){
-			for(auto i=0u; i<8; i++, std::ranges::advance(out, shift), std::ranges::advance(in, shift)){//add constexpr if for advance!
-				auto bitmap_byte=std::bitset<8>(*in);
-				bitmap_byte[7]=byte[i];
-				
-				*out=bitmap_byte.to_ulong();
-			}
-		}else{
-			auto advance=[](auto& it, auto const n){ while(n--) ++it; };
+	auto header_bytes=to_little_endianness_bytes<8>(message_size);
+	auto shift=(target_size-8)/(message_size*8);
 
-			for(auto i=0u; i<8; i++, advance(out, shift), advance(in, shift)){//add constexpr if for advance!
-				auto bitmap_byte=std::bitset<8>(*in);
-				bitmap_byte[7]=byte[i];
-				
-				*out=bitmap_byte.to_ulong();
-			}
+	if(!shift) throw std::invalid_argument("message too big!");
+
+	for(auto i=0u;i<8u;i++, ++out_target) *out_target=header_bytes[i];
+
+	for(auto message_byte : in_message){
+		std::bitset<8> message_byte_bitset(message_byte);
+
+		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, shift)){
+			auto bitmap_byte=std::bitset<8>(*out_target);
+			bitmap_byte[7]=message_byte_bitset[i];
+			
+			*out_target=bitmap_byte.to_ulong();
 		}
 	}
+
 }
+
 
 template<typename Range, typename OutputIterator>
 auto decode_message(Range in, OutputIterator out_it) -> void
 requires
 std::ranges::input_range<Range>
+&&
+std::same_as<typename Range::iterator::value_type, std::uint8_t>
 &&
 std::output_iterator<OutputIterator, std::uint8_t>
 {
@@ -109,6 +91,8 @@ std::output_iterator<OutputIterator, std::uint8_t>
 		*out_it=data_byte.to_ulong();
 	}
 }
+
+
 
 }
 }

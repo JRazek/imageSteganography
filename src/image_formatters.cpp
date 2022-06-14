@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <cstdint>
 #include <image_formatters.hpp>
 #include <bitmap.hpp>
 #include <istream>
+#include <iterator>
 #include <vector>
 #include <fstream>
 #include <string>
@@ -15,6 +17,7 @@
 
 #include <utils.hpp>
 #include <istream>
+#include <range/v3/view.hpp>
 
 
 namespace jr{
@@ -41,23 +44,35 @@ auto decode_bmp(std::istream&& str) -> std::vector<std::uint8_t>{
 	return result;
 }
 
-auto encode_bmp(std::string const& path, std::vector<std::uint8_t> const& data) -> void{
-	encode_bmp(std::fstream(path, std::ios::in | std::ios::out | std::ios::binary), data);
+auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& data) -> void{
+	auto input_str=std::ifstream(input_path, std::ios::binary);
+	auto output_str=std::ofstream(output_path, std::ios::binary | std::ios::trunc);
+	encode_bmp(std::move(input_str), std::move(output_str), data);
 }
 
-auto encode_bmp(std::iostream&& str, std::vector<std::uint8_t> const& data) -> void{
+auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void{
 	constexpr auto header_size=54;
 
 	std::vector<std::uint8_t> header_bytes(header_size);
 
-	str.read(reinterpret_cast<char*>(header_bytes.data()), header_size);
+	input.read(reinterpret_cast<char*>(header_bytes.data()), header_size);
 
 	BitmapHeader header{header_bytes};
 
-	std::istream_iterator<std::uint8_t> in(str); std::advance(in, header.first_data_byte);
-	std::ostream_iterator<std::uint8_t> out(str); for(auto i=0u;i<header.first_data_byte;i++) ++out;
+	std::vector<std::uint8_t> metadata(header.first_data_byte-header_size);
 
-//	encode_message(in, header.image_size, out, data);
+	input.read(reinterpret_cast<char*>(metadata.data()), metadata.size());
+
+	std::istreambuf_iterator<char> input_stream_it(input); 
+
+	std::vector<std::uint8_t> image_buffered(input_stream_it, std::istreambuf_iterator<char>());
+
+	encode_message(image_buffered, message, image_buffered.begin());
+
+	std::ostreambuf_iterator<char> output_stream_it(output); 
+	
+	for(auto b : ranges::views::concat(header_bytes, metadata, image_buffered)) 
+		*output_stream_it=b;
 }
 
 

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <bitmap.hpp>
 #include <image_formatters.hpp>
@@ -6,11 +7,16 @@
 
 auto main()->int{
     using namespace jr::img;
-    auto file=std::fstream("/home/user/CLionProjects/imageSteganography/test_resources/LAND.BMP");
 
-    auto file2=std::ofstream("/home/user/CLionProjects/imageSteganography/test_resources/image2.bmp");
+    auto file="/home/user/CLionProjects/imageSteganography/test_resources/LAND.BMP";
 
-		
+    auto file2="/home/user/CLionProjects/imageSteganography/test_resources/output_LAND.BMP";
+
+	std::vector<std::uint8_t> message{'2','1','3','7'};
+
+	encode_bmp(file, file2, message);
+
+//	decode_bmp(u);
 
 }
 
