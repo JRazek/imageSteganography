@@ -1,4 +1,4 @@
-#include <bitmap.hpp>
+#include "bitmap.hpp"
 #include <algorithm>
 #include <numeric>
 #include <cassert>

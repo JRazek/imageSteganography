@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <bitmap.hpp>
+#include "bitmap.hpp"
 #include <string>
 #include <iterator>
 #include <bitset>

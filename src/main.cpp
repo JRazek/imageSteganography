@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <iostream>
-#include <bitmap.hpp>
-#include <image_formatters.hpp>
+#include "bitmap.hpp"
+#include "image_formatters.hpp"
 #include <fstream>
 #include <cassert>
 
