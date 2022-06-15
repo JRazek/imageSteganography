@@ -65,10 +65,10 @@ auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& m
 
 	try{
 		if(header->get_file_format()==img::ImageFormat::bmp){
-			img::encode_bmp(file, file, message);
+			img::encode_format<img::ImageFormat::bmp>(file, file, message);
 		}
 		else if(header->get_file_format()==img::ImageFormat::ppm){
-			img::encode_ppm(file, file, message);
+			img::encode_format<img::ImageFormat::ppm>(file, file, message);
 		}
 		else assert(false);
 	}catch(std::invalid_argument const& e){
@@ -86,10 +86,10 @@ auto decrypt_message(std::string const& file) -> void{
 		std::vector<std::uint8_t> result;
 
 		if(header->get_file_format()==img::ImageFormat::bmp){
-			result=img::decode_bmp(file);
+			result=img::decode_format<img::ImageFormat::bmp>(file);
 		}
 		else if(header->get_file_format()==img::ImageFormat::ppm){
-			result=img::decode_ppm(file);
+			result=img::decode_format<img::ImageFormat::ppm>(file);
 		}
 		else assert(false);
 		std::string str(result.begin(), result.end());
@@ -106,10 +106,10 @@ auto check_encodable(std::string const& file, std::vector<std::uint8_t> const& m
 
 	try{
 		if(header->get_file_format()==img::ImageFormat::bmp){
-			img::encode_bmp(file, file, message);
+			img::check_encodable_bmp(file, file, message);
 		}
 		else if(header->get_file_format()==img::ImageFormat::ppm){
-			img::encode_ppm(file, file, message);
+
 		}
 		else assert(false);
 	}catch(std::invalid_argument const& e){

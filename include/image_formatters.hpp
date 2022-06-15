@@ -9,18 +9,16 @@
 #include <iterator>
 #include <cassert>
 #include <span>
+#include <istream>
+#include <ostream>
+#include <fstream>
+
 
 
 namespace jr{
 namespace img{
 
-auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void;
-
-auto decode_bmp(std::string const& input_path) -> std::vector<std::uint8_t>;
-
-auto encode_ppm(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void;
-
-auto decode_ppm(std::string const& input_path) -> std::vector<std::uint8_t>;
+auto check_encodable_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> bool;
 
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
@@ -53,6 +51,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 }
 
+
 template<typename Range, typename OutputIterator>
 auto decode_message(Range in_target, OutputIterator output_it) -> void
 requires
@@ -78,6 +77,33 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	}
 }
 
+template<ImageFormat format>
+auto encode_format(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void{
+	std::ifstream input_str(input_path, std::ios::binary);
+	std::istreambuf_iterator<char> input_stream_it(input_str);
+
+	std::vector<std::uint8_t> buffer_input(input_stream_it, std::istreambuf_iterator<char>());
+	std::vector<std::uint8_t> buffer_output;
+
+	encode<format>(buffer_input, message, std::back_inserter(buffer_output));
+
+	std::ofstream output_str(output_path, std::ios::binary);
+	std::ostreambuf_iterator<char> output_stream_it(output_str);
+
+	std::ranges::copy(buffer_output, output_stream_it);
+}
+
+template<ImageFormat format>
+auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t>{
+	std::ifstream input_stream(input_path, std::ios::binary);
+
+	std::istreambuf_iterator<char> input_stream_it(input_stream);
+	std::vector<std::uint8_t> buffer_input(input_stream_it, std::istreambuf_iterator<char>());
+
+	std::vector<std::uint8_t> result;
+	return decode<format>(buffer_input, std::back_inserter(result));
+}
+
 
 template<img::ImageFormat format> struct ImageFormatHeader{ };
 
@@ -85,7 +111,10 @@ template<> struct ImageFormatHeader<img::ImageFormat::bmp>{ using value_type=BMP
 
 template<> struct ImageFormatHeader<img::ImageFormat::ppm>{ using value_type=PPMHeader; };
 
-
+/*
+ * generates format specfic
+ *
+ */
 template<img::ImageFormat format, typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
 requires
