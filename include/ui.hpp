@@ -10,6 +10,7 @@
 #include <iostream>
 #include <filesystem>
 #include <chrono>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -62,34 +63,60 @@ auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& m
 	std::ifstream input_stream(file, std::ios::binary);
 	auto header=img::detectAndCreate(std::move(input_stream));
 
-	input_stream.close();
+	try{
+		if(header->get_file_format()==img::ImageFormat::bmp){
+			img::encode_bmp(file, file, message);
+		}
+		else if(header->get_file_format()==img::ImageFormat::ppm){
+			img::encode_ppm(file, file, message);
+		}
+		else assert(false);
+	}catch(std::invalid_argument const& e){
+		output_stream_<<e.what()<<'\n';
+	}
 
-	if(header->get_file_format()==img::ImageFormat::bmp){
-		img::encode_bmp(file, file, message);
-	}
-	else if(header->get_file_format()==img::ImageFormat::ppm){
-		img::encode_ppm(file, file, message);
-	}
-	else assert(false);
+	output_stream_<<"successfully encoded "<<file<<'\n';
 }
 
 auto decrypt_message(std::string const& file) -> void{
 	std::ifstream input_stream(file, std::ios::binary);
 	auto header=img::detectAndCreate(std::move(input_stream));
 
-	std::vector<std::uint8_t> result;
+	try{
+		std::vector<std::uint8_t> result;
 
-	if(header->get_file_format()==img::ImageFormat::bmp){
-		result=img::decode_bmp(file);
+		if(header->get_file_format()==img::ImageFormat::bmp){
+			result=img::decode_bmp(file);
+		}
+		else if(header->get_file_format()==img::ImageFormat::ppm){
+			result=img::decode_ppm(file);
+		}
+		else assert(false);
+		std::string str(result.begin(), result.end());
+
+		output_stream_<<"encrypted message:\t\t\t"<<str<<'\n';
+	}catch(std::invalid_argument const& e){
+		output_stream_<<e.what()<<'\n';
 	}
-	else if(header->get_file_format()==img::ImageFormat::ppm){
-		result=img::decode_ppm(file);
+}
+
+auto check_encodable(std::string const& file, std::vector<std::uint8_t> const& message) -> void{
+	std::ifstream input_stream(file, std::ios::binary);
+	auto header=img::detectAndCreate(std::move(input_stream));
+
+	try{
+		if(header->get_file_format()==img::ImageFormat::bmp){
+			img::encode_bmp(file, file, message);
+		}
+		else if(header->get_file_format()==img::ImageFormat::ppm){
+			img::encode_ppm(file, file, message);
+		}
+		else assert(false);
+	}catch(std::invalid_argument const& e){
+		output_stream_<<e.what()<<'\n';
 	}
-	else assert(false);
 
-	std::string str(result.begin(), result.end());
-
-	std::cout<<str<<'\n';
+	output_stream_<<"successfully encoded "<<file<<'\n';
 }
 
 auto run(int argc, char **argv){
@@ -111,8 +138,9 @@ auto run(int argc, char **argv){
 		}
 		else if((first=="-c" || first=="--check") && argc==4){
 			std::string file=argv[2];
-			std::string message=argv[3];
-			//check if file can be encrypted with specified message
+			std::vector<std::uint8_t> message(argv[3], argv[3]+std::strlen(argv[3]));
+
+			check_encodable(file, message);
 		}
 		else if(first=="-h" || first=="--help"){
 			show_help();

@@ -71,7 +71,6 @@ std::same_as<typename Range::iterator::value_type, std::uint8_t>
 &&
 std::output_iterator<OutputIterator, std::uint8_t>
 {
-
 	auto target_size=std::ranges::distance(in);
 
 	auto data_size=bytes_to_little_endianess<std::size_t>(in | std::views::take(8));
@@ -124,6 +123,7 @@ std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
 std::output_iterator<OutputIterator, std::uint8_t>{
 	std::vector<std::uint8_t> image_buffered(input_target);
 
+	//since application could be expanded and more image types may be added, conditional_t would not work here.
 	using HeaderType=typename ImageFormatHeader<format>::value_type;
 
 	HeaderType header{image_buffered};
