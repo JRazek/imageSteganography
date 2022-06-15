@@ -15,7 +15,7 @@ auto main(int argc, char **argv)->int{
 
 	ui.run(argc, argv);
 
-//	return 0;
+	return 0;
     using namespace jr::img;
 
     auto file="/home/user/CLionProjects/imageSteganography/test_resources/LAND.BMP";

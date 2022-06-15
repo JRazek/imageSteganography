@@ -1,7 +1,14 @@
 #pragma once
 
+#include "bitmap.hpp"
+#include "utils.hpp"
+#include <chrono>
+#include <fstream>
 #include <ostream>
 #include <iostream>
+#include <filesystem>
+#include <chrono>
+#include <string>
 
 
 namespace jr{
@@ -26,6 +33,24 @@ auto show_help(){
 	output_stream_<<s;	
 }
 
+auto show_info(std::string const& file){
+	std::ifstream input_stream(file, std::ios::binary);
+	auto header=img::detectAndCreate(std::move(input_stream));
+
+	auto time_string=get_last_write_as_string(file);
+
+
+	//couldnt use std::format in my compiler :<<
+
+	std::string s=
+		"last modification:                    "+time_string+'\n'+
+		"file size:                            "+std::to_string(header->get_file_size())+'\n'+
+		"image size                            "+std::to_string(header->get_image_size())+'\n'+
+		"\n";
+
+	output_stream_<<s;	
+}
+
 auto invalid_argument(){
 	output_stream_<<"invalid run. use -h or --help for help\n";
 }
@@ -35,7 +60,7 @@ auto run(int argc, char **argv){
 		std::string first=argv[1];
 		if((first=="-i" || first=="--info") && argc==3){
 			std::string file=argv[2];
-			//read file
+			show_info(file);
 		}
 		else if((first=="-e" || first=="--encrypt") && argc==4){
 			std::string file=argv[2];

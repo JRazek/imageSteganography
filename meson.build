@@ -32,6 +32,7 @@ exec=executable(
     'src/main.cpp',
     'src/bitmap.cpp',
     'src/image_formatters.cpp',
+    'src/utils.cpp',
     include_directories : incdir,
     cpp_args: build_args,
 	link_args: link_args,

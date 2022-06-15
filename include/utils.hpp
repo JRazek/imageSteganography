@@ -64,5 +64,7 @@ auto bytes_to_little_endianess(Iterator low, std::size_t size) -> T {
 	return bytes_to_little_endianess<T>(std::ranges::subrange{low, high}); 
 }
 
+auto get_last_write_as_string(std::string const& file) -> std::string;
+
 }
 

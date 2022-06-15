@@ -18,6 +18,7 @@ struct Header{
 	virtual auto get_file_size() -> std::size_t = 0;
 
 	virtual ~Header() = default;
+
 };
 
 struct BMPHeader : Header{
@@ -28,6 +29,10 @@ struct BMPHeader : Header{
 	std::uint16_t reserved2;
 
 	std::uint32_t image_size;
+
+	BMPHeader(std::istreambuf_iterator<char> input_stream_it):
+	BMPHeader(std::vector<std::uint8_t>(input_stream_it, std::istreambuf_iterator<char>()))
+	{}
 
 	BMPHeader(std::vector<std::uint8_t> const& header){
 		if(header.size()<0x26) throw std::invalid_argument("invalid header size in bitmap");
@@ -54,6 +59,10 @@ struct PPMHeader : Header{
 	std::uint32_t first_data_byte;
 
 	std::uint32_t image_size;
+
+	PPMHeader(std::istreambuf_iterator<char> input_stream_it):
+	PPMHeader(std::vector<std::uint8_t>(input_stream_it, std::istreambuf_iterator<char>()))
+	{}
 
 	PPMHeader(std::vector<std::uint8_t> const& header){
 		if(header.size()<0x2) throw std::invalid_argument("invalid header size in bitmap");
@@ -85,6 +94,10 @@ struct PPMHeader : Header{
 
 	auto get_file_size() -> std::size_t override { return file_size; }
 };
+
+auto detectAndCreate(std::istream&& input_stream) -> std::unique_ptr<Header>;
+auto detectAndCreate(std::vector<std::uint8_t> const& header_bytes) -> std::unique_ptr<Header>;
+
 
 }
 }
