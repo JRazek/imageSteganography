@@ -141,5 +141,16 @@ private:
 	shift_(shift){}
 };
 
+constexpr auto is_linux_machine() noexcept -> bool{
+#ifdef __linux 
+#define IS_LINUX_MACHINE true
+#else 
+#define IS_LINUX_MACHINE false
+#endif
+	bool kIs_linux=IS_LINUX_MACHINE;
+#undef IS_LINUX_MACHINE
+	return kIs_linux;
+}
+
 }
 

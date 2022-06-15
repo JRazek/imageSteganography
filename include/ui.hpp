@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <ostream>
 #include <iostream>
@@ -19,6 +20,7 @@
 namespace jr{
 
 class terminal_ui{
+
 public:
 	terminal_ui(std::ostream& output_stream = std::cout):
 	output_stream_(output_stream)
@@ -144,8 +146,8 @@ auto run(int argc, char **argv){
 		else if(first=="-h" || first=="--help"){
 			show_help();
 		}
-		else if(first=="--letsplay"){
-			//easter egg?::<<??
+		else if(first=="--helpmepls" && is_linux_machine()){
+			std::system("vim --cmd \"help 42\"");
 		}
 		else{
 			invalid_argument();
