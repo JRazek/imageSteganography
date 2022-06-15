@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "bitmap.hpp"
+#include "utils.hpp"
 #include <string>
 #include <iterator>
 #include <bitset>
@@ -34,24 +35,15 @@ std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
 &&
 std::output_iterator<OutputIterator, std::uint8_t>
 {
-	auto target_size=std::ranges::distance(in_target);
-	auto message_size=std::ranges::distance(in_message);
-
-	if(!target_size || !message_size) std::invalid_argument("invalid file contents!");
-
 	std::ranges::copy(std::begin(in_target), std::end(in_target), out_target);
+	auto encoding_data=SteganographyImageMetadata::create_metadata_for_encrypting(in_target, in_message);
 
-	auto header_bytes=to_little_endianness_bytes<8>(message_size);
-	auto shift=(target_size-8)/(message_size*8);
-
-	if(!shift) throw std::invalid_argument("message too big!");
-
-	for(auto i=0u;i<8u;i++, ++out_target) *out_target=header_bytes[i];
+	for(auto i=0u;i<8u;i++, ++out_target) *out_target=encoding_data.header_bytes_[i];
 
 	for(auto message_byte : in_message){
 		std::bitset<8> message_byte_bitset(message_byte);
 
-		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, shift)){
+		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, encoding_data.shift_)){
 			auto bitmap_byte=std::bitset<8>();
 			bitmap_byte[0]=message_byte_bitset[i];
 			
@@ -96,18 +88,13 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	}
 }
 
-template<img::ImageFormat format>
-struct ImageFormatHeader{};
 
-template<>
-struct ImageFormatHeader<img::ImageFormat::bmp>{
-	using value_type=BMPHeader;
-};
+template<img::ImageFormat format> struct ImageFormatHeader{ };
 
-template<>
-struct ImageFormatHeader<img::ImageFormat::ppm>{
-	using value_type=PPMHeader;
-};
+template<> struct ImageFormatHeader<img::ImageFormat::bmp>{ using value_type=BMPHeader; };
+
+template<> struct ImageFormatHeader<img::ImageFormat::ppm>{ using value_type=PPMHeader; };
+
 
 template<img::ImageFormat format, typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
@@ -136,6 +123,7 @@ std::output_iterator<OutputIterator, std::uint8_t>{
 
 	std::ranges::copy(image_buffered, output);
 }
+
 
 template<img::ImageFormat format, typename InputTargetRange, typename OutputIterator>
 auto decode(InputTargetRange input_target, OutputIterator output) -> std::vector<std::uint8_t>
