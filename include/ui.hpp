@@ -113,7 +113,7 @@ auto check_encodable(std::string const& file, std::vector<std::uint8_t> const& m
 	}
 	else assert(false);
 	
-	if(ok) output_stream_<<"successfully encoded to:"<<file<<'\n';
+	if(ok) output_stream_<<file<<" can be encoded with \""<<std::string(message.begin(), message.end())<<"\"\n";
 	else output_stream_<<"cannot encode message to:"<<file<<'\n';
 	
 }
