@@ -12,13 +12,13 @@
 namespace jr{
 namespace img{
 
-auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& data) -> void;
-
-auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
+auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void;
 
 auto decode_bmp(std::string const& input_path) -> std::vector<std::uint8_t>;
 
-auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>;
+auto encode_ppm(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void;
+
+
 
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
@@ -36,7 +36,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	auto target_size=std::ranges::distance(in_target);
 	auto message_size=std::ranges::distance(in_message);
 
-	assert(target_size && message_size);
+	if(!target_size || !message_size) std::invalid_argument("invalid file contents!");
 
 	std::ranges::copy(std::begin(in_target), std::end(in_target), out_target);
 
@@ -51,7 +51,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 		std::bitset<8> message_byte_bitset(message_byte);
 
 		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, shift)){
-			auto bitmap_byte=std::bitset<8>(*out_target);
+			auto bitmap_byte=std::bitset<8>();
 			bitmap_byte[0]=message_byte_bitset[i];
 			
 			*out_target=bitmap_byte.to_ulong();
