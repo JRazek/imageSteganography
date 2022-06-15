@@ -2,13 +2,23 @@
 #include <iostream>
 #include "bitmap.hpp"
 #include "image_formatters.hpp"
+#include "ui.hpp"
 #include <fstream>
 #include <cassert>
 
-auto main()->int{
+namespace jr{
+}
+
+auto main(int argc, char **argv)->int{
+
+	jr::terminal_ui ui;
+
+	ui.run(argc, argv);
+
+	return 0;
     using namespace jr::img;
 
-    auto file="/home/user/CLionProjects/imageSteganography/test_resources/LAND.BMP";
+    auto file="/home/user/CLionProjects/imageSteganography/test_resources/LAND.BMPd";
 
     auto file2="/home/user/CLionProjects/imageSteganography/test_resources/output_LAND.BMP";
 
