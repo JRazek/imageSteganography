@@ -31,6 +31,7 @@ auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>;
 
 auto encode_ppm(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
 
+auto decode_ppm(std::istream&& input) -> std::vector<std::uint8_t>;
 
 
 auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& data) -> void{
@@ -94,6 +95,30 @@ auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>{
 	return result;
 }
 
+auto find_first_image_byte_ppm(std::vector<std::uint8_t>& image_buffered) -> std::vector<std::uint8_t>::iterator{
+	std::string format(image_buffered.begin(), image_buffered.begin()+0x2);
+	if(format!="P6") throw std::invalid_argument("invalid format!");
+	
+
+	auto it=image_buffered.begin();
+
+	std::size_t line_num=0; 
+
+	auto test=0;
+	
+	while(it!=image_buffered.end() && line_num<3){
+		if(*it=='\n'){
+			if(it!=image_buffered.end() && *it!='#') ++line_num;//this will ignore all lines starting with #
+		}
+		++it;
+		test++;
+	}
+	
+	if(line_num!=3) throw std::invalid_argument("ppm P6 corrupted!");
+
+	return it;
+}
+
 auto encode_ppm(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void{
 	std::ifstream input_str(input_path, std::ios::binary);
 	std::ofstream output_str(output_path, std::ios::binary | std::ios::trunc);
@@ -110,28 +135,38 @@ auto encode_ppm(std::istream&& input, std::ostream&& output, std::vector<std::ui
 
 	std::ranges::copy(input_stream_it, std::istreambuf_iterator<char>(), std::back_inserter(image_buffered));
 
-	std::string format(image_buffered.begin(), image_buffered.begin()+0x2);
-	if(format!="P6") throw std::invalid_argument("invalid format!");
-	
+	auto it=find_first_image_byte_ppm(image_buffered);
 
-	auto it=image_buffered.begin();
+	auto span=std::span{it, image_buffered.end()};
 
-	std::size_t line_num=0; 
+	encode_message(span, message, it);
 
-	while(it!=image_buffered.end() && line_num<3){
-		if(*it=='\n'){
-			if(it!=image_buffered.end() && *it!='#') ++line_num;//this will ignore all lines starting with #
-		}
-		++it;
-	}
-	
-	if(line_num!=3) throw std::invalid_argument("ppm P6 corrupted!");
-
-	auto span=std::span{image_buffered}.subspan(0, std::ranges::distance(it, image_buffered.end()));
-
-	encode_message(span, message, output_stream_it);
+	std::ranges::copy(image_buffered, output_stream_it);
 }
 
+auto decode_ppm(std::string const& input_path) -> std::vector<std::uint8_t>{
+	std::ifstream input_str(input_path, std::ios::binary);
+	return decode_ppm(std::move(input_str));
+}
+
+auto decode_ppm(std::istream&& input) -> std::vector<std::uint8_t>{
+	
+	std::istreambuf_iterator<char> input_stream_it(input);
+	
+	std::vector<std::uint8_t> image_buffered;
+
+	std::ranges::copy(input_stream_it, std::istreambuf_iterator<char>(), std::back_inserter(image_buffered));
+
+	auto it=find_first_image_byte_ppm(image_buffered);
+
+	auto span=std::span{it, image_buffered.end()};
+
+	std::vector<std::uint8_t> result;
+
+	decode_message(span, std::back_inserter(result));
+
+	return result;
+}
 
 }
 }

@@ -18,6 +18,7 @@ auto decode_bmp(std::string const& input_path) -> std::vector<std::uint8_t>;
 
 auto encode_ppm(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void;
 
+auto decode_ppm(std::string const& input_path) -> std::vector<std::uint8_t>;
 
 
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
@@ -75,7 +76,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 	auto data_size=bytes_to_little_endianess<std::size_t>(in | std::views::take(8));
 
-	if(!data_size) throw std::invalid_argument("encoded image is corrupted!");
+	if(!data_size) throw std::invalid_argument("encoded image is corrupted, data size is 0!");
 
 	auto shift=(target_size-8)/(data_size*8);
 

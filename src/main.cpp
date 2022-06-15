@@ -13,9 +13,9 @@ auto main()->int{
     auto file2="/home/user/CLionProjects/imageSteganography/test_resources/output_LAND.BMP";
 
 	std::vector<std::uint8_t> message;
-	for(int i=0;i<10;i++) message.push_back(('A'+i)%('z'+1));
+	for(int i=0;i<1e2+4;i++) message.push_back('A' + i % ('Z'-'A'+1));
 
-	//encode_bmp(file, file2, message);
+	encode_bmp(file, file2, message);
 
 	auto res=decode_bmp(file2);
 
@@ -27,5 +27,12 @@ auto main()->int{
     auto file4="/home/user/CLionProjects/imageSteganography/test_resources/output_ppm.ppm";
 
 	encode_ppm(file3, file4, message);
+
+	res=decode_ppm(file4);
+
+	s=std::string(res.begin(), res.end());
+	std::cout<<s<<'\n';
+	
+
 }
 
