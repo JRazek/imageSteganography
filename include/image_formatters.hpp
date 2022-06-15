@@ -21,7 +21,6 @@ auto encode_ppm(std::string const& input_path, std::string const& output_path, s
 
 auto decode_ppm(std::string const& input_path) -> std::vector<std::uint8_t>;
 
-
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
 requires 
@@ -98,9 +97,22 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	}
 }
 
-template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
-auto encode_bmp(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
-requires 
+template<img::ImageFormat format>
+struct ImageFormatHeader{};
+
+template<>
+struct ImageFormatHeader<img::ImageFormat::bmp>{
+	using value_type=BMPHeader;
+};
+
+template<>
+struct ImageFormatHeader<img::ImageFormat::ppm>{
+	using value_type=PPMHeader;
+};
+
+template<img::ImageFormat format, typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
+auto encode(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
+requires
 std::ranges::input_range<InputTargetRange>
 &&
 std::ranges::input_range<InputMessageRange>
@@ -112,7 +124,9 @@ std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
 std::output_iterator<OutputIterator, std::uint8_t>{
 	std::vector<std::uint8_t> image_buffered(input_target);
 
-	BMPHeader header{image_buffered};
+	using HeaderType=typename ImageFormatHeader<format>::value_type;
+
+	HeaderType header{image_buffered};
 
 	auto it=image_buffered.begin()+header.first_data_byte;
 
@@ -123,8 +137,8 @@ std::output_iterator<OutputIterator, std::uint8_t>{
 	std::ranges::copy(image_buffered, output);
 }
 
-template<typename InputTargetRange, typename OutputIterator>
-auto decode_bmp(InputTargetRange input_target, OutputIterator output) -> std::vector<std::uint8_t>
+template<img::ImageFormat format, typename InputTargetRange, typename OutputIterator>
+auto decode(InputTargetRange input_target, OutputIterator output) -> std::vector<std::uint8_t>
 requires 
 std::ranges::input_range<InputTargetRange>
 &&
@@ -133,7 +147,9 @@ std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
 std::output_iterator<OutputIterator, std::uint8_t>{
 	std::vector<std::uint8_t> image_buffered(input_target);
 
-	BMPHeader header{image_buffered};
+	using HeaderType=typename ImageFormatHeader<format>::value_type;
+
+	HeaderType header{image_buffered};
 
 	std::vector<std::uint8_t> result;
 
@@ -142,33 +158,6 @@ std::output_iterator<OutputIterator, std::uint8_t>{
 	decode_message(span, std::back_inserter(result));
 
 	return result;
-}
-
-
-
-template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
-auto encode_ppm(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
-requires 
-std::ranges::input_range<InputTargetRange>
-&&
-std::ranges::input_range<InputMessageRange>
-&&
-std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
-&&
-std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
-&&
-std::output_iterator<OutputIterator, std::uint8_t>{
-	std::vector<std::uint8_t> image_buffered(input_target);
-
-	PPMHeader header{image_buffered};
-
-	auto it=image_buffered.begin()+header.first_data_byte;
-
-	auto span=std::span{it, image_buffered.end()};
-
-	encode_message(span, message, it);
-
-	std::ranges::copy(image_buffered, output);
 }
 
 
