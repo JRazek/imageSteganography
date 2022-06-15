@@ -103,6 +103,31 @@ struct SteganographyImageMetadata{
 		);
 	}
 
+	template<typename InputTargetRange>
+	static auto create_metadata_for_decrypting(InputTargetRange in_target) -> SteganographyImageMetadata
+	requires 
+	std::ranges::input_range<InputTargetRange>
+	&&
+	std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
+	{
+		auto target_size=std::ranges::distance(in_target);
+		auto message_size=bytes_to_little_endianess<std::size_t>(in_target | std::views::take(8));
+
+		if(!target_size || !message_size) std::invalid_argument("invalid file contents!");
+
+		auto header_bytes=to_little_endianness_bytes<8>(message_size);
+		auto shift=(target_size-8)/(message_size*8);
+
+		if(!shift) throw std::invalid_argument("message too big!");
+
+		return SteganographyImageMetadata(
+			target_size,
+			message_size,
+			header_bytes,
+			shift
+		);
+	}
+
 private:
 	SteganographyImageMetadata(
 		std::size_t const target_size,

@@ -53,9 +53,8 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 }
 
-
 template<typename Range, typename OutputIterator>
-auto decode_message(Range in, OutputIterator out_it) -> void
+auto decode_message(Range in_target, OutputIterator output_it) -> void
 requires
 std::ranges::input_range<Range>
 &&
@@ -63,28 +62,19 @@ std::same_as<typename Range::iterator::value_type, std::uint8_t>
 &&
 std::output_iterator<OutputIterator, std::uint8_t>
 {
-	auto target_size=std::ranges::distance(in);
+	auto decoding_data=SteganographyImageMetadata::create_metadata_for_decrypting(in_target);
 
-	auto data_size=bytes_to_little_endianess<std::size_t>(in | std::views::take(8));
+	auto in_it=std::begin(in_target); std::ranges::advance(in_it, 8);
 
-	if(!data_size) throw std::invalid_argument("encoded image is corrupted, data size is 0!");
-
-	auto shift=(target_size-8)/(data_size*8);
-
-	if(!shift) throw std::invalid_argument("encoded image is corrupted!");
-
-	auto in_it=std::begin(in); std::ranges::advance(in_it, 8);
-
-
-	for(auto i=0u;i<data_size;i++, ++out_it){
+	for(auto i=0u;i<decoding_data.message_size_;i++, ++output_it){
 		std::bitset<8> data_byte;
 
-		for(auto i=0u;i<8;i++, std::ranges::advance(in_it, shift)){
+		for(auto i=0u;i<8;i++, std::ranges::advance(in_it, decoding_data.shift_)){
 			auto bitmap_byte=std::bitset<8>(*in_it);
 			data_byte[i]=bitmap_byte[0];
 		}
 
-		*out_it=data_byte.to_ulong();
+		*output_it=data_byte.to_ulong();
 	}
 }
 
