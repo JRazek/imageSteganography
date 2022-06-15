@@ -22,6 +22,11 @@ else
 	link_args += build_args 
 endif
 
+range_v3 = subproject('range-v3')
+
+range_v3 = range_v3.get_variable('range_v3')
+
+
 exec=executable(
     'image_steganography',
     'src/main.cpp',
@@ -30,6 +35,6 @@ exec=executable(
     include_directories : incdir,
     cpp_args: build_args,
 	link_args: link_args,
-    dependencies: []
+    dependencies: [range_v3]
 )
 
