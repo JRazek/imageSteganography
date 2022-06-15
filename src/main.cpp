@@ -15,6 +15,8 @@ auto main(int argc, char **argv)->int{
 
 	ui.run(argc, argv);
 
+//	ui.encrypt_message("/home/user/CLionProjects/imageSteganography/test_resources/marbles.bmp", {'d', 'u', 'p', 'a'});
+
 	return 0;
     using namespace jr::img;
 

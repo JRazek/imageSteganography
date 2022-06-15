@@ -123,6 +123,27 @@ std::output_iterator<OutputIterator, std::uint8_t>{
 	std::ranges::copy(image_buffered, output);
 }
 
+template<typename InputTargetRange, typename OutputIterator>
+auto decode_bmp(InputTargetRange input_target, OutputIterator output) -> std::vector<std::uint8_t>
+requires 
+std::ranges::input_range<InputTargetRange>
+&&
+std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
+&&
+std::output_iterator<OutputIterator, std::uint8_t>{
+	std::vector<std::uint8_t> image_buffered(input_target);
+
+	BMPHeader header{image_buffered};
+
+	std::vector<std::uint8_t> result;
+
+	auto span=std::span{image_buffered.begin()+header.first_data_byte, image_buffered.end()};
+
+	decode_message(span, std::back_inserter(result));
+
+	return result;
+}
+
 
 
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>

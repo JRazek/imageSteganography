@@ -73,6 +73,25 @@ auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& m
 	else assert(false);
 }
 
+auto decrypt_message(std::string const& file) -> void{
+	std::ifstream input_stream(file, std::ios::binary);
+	auto header=img::detectAndCreate(std::move(input_stream));
+
+	std::vector<std::uint8_t> result;
+
+	if(header->get_file_format()==img::ImageFormat::bmp){
+		result=img::decode_bmp(file);
+	}
+	else if(header->get_file_format()==img::ImageFormat::ppm){
+		result=img::decode_ppm(file);
+	}
+	else assert(false);
+
+	std::string str(result.begin(), result.end());
+
+	std::cout<<str<<'\n';
+}
+
 auto run(int argc, char **argv){
 	if(argc>=2){
 		std::string first=argv[1];
@@ -87,8 +106,8 @@ auto run(int argc, char **argv){
 			encrypt_message(file, message);
 		}
 		else if((first=="-d" || first=="--decrypt") && argc==3){
-			std::string file=argv[1];
-			//decrypt message
+			std::string file=argv[2];
+			decrypt_message(file);
 		}
 		else if((first=="-c" || first=="--check") && argc==4){
 			std::string file=argv[2];

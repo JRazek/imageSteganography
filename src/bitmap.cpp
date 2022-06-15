@@ -13,7 +13,8 @@ namespace img{
 
 auto detectAndCreate(std::istream&& input_stream) -> std::unique_ptr<Header>{
 	std::istreambuf_iterator<char> it(input_stream);
-	return detectAndCreate(std::vector<std::uint8_t>(it, std::istreambuf_iterator<char>()));
+	std::vector<std::uint8_t> input_buffer(it, std::istreambuf_iterator<char>());
+	return detectAndCreate(input_buffer);
 }
 
 auto detectAndCreate(std::vector<std::uint8_t> const& header_bytes) -> std::unique_ptr<Header>{
