@@ -152,5 +152,15 @@ constexpr auto is_linux_machine() noexcept -> bool{
 	return kIs_linux;
 }
 
+class JRException : public std::exception {
+public:
+	JRException(const std::string& message) : message_(message){};
+
+	const char* what() const noexcept override { return message_.c_str(); }
+
+private:
+	std::string message_;
+};
+
 }
 

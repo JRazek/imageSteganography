@@ -7,6 +7,7 @@
 #include <memory>
 #include "utils.hpp"
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace jr{
@@ -41,10 +42,10 @@ struct BMPHeader : Header{
 	{}
 
 	BMPHeader(std::vector<std::uint8_t> const& header){
-		if(header.size()<0x26) throw std::invalid_argument("invalid header size in bitmap");
+		if(header.size()<0x26) throw JRException("invalid header size in bitmap");
 
 		std::string format(header.begin(), header.begin()+2);
-		if(format!="BM") throw std::invalid_argument("unsupported bmp format");
+		if(format!="BM") throw JRException("unsupported bmp format");
 		
 		file_size=bytes_to_little_endianess<std::uint32_t>(header.begin()+0x2, 4);
 		first_data_byte=bytes_to_little_endianess<std::uint32_t>(header.begin()+0xA, 4);
@@ -73,10 +74,10 @@ struct PPMHeader : Header{
 	{}
 
 	PPMHeader(std::vector<std::uint8_t> const& header){
-		if(header.size()<0x2) throw std::invalid_argument("invalid header size in ppm");
+		if(header.size()<0x2) throw JRException("invalid header size in ppm " + std::to_string(header.size()));
 
 		std::string format(header.begin(), header.begin()+0x2);
-		if(format!="P6") throw std::invalid_argument("invalid format!");
+		if(format!="P6") throw JRException("invalid format!");
 
 		auto it=header.begin();
 
@@ -92,7 +93,7 @@ struct PPMHeader : Header{
 			test++;
 		}
 		
-		if(line_num!=3) throw std::invalid_argument("ppm P6 corrupted!");
+		if(line_num!=3) throw JRException("ppm P6 corrupted!");
 
 		file_size=header.size();
 		first_data_byte=std::ranges::distance(header.begin(), it);

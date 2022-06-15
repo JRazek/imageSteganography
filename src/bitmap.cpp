@@ -1,6 +1,8 @@
 #include "bitmap.hpp"
+#include "utils.hpp"
 #include <algorithm>
 #include <iterator>
+#include <exception>
 #include <numeric>
 #include <cassert>
 #include <iterator>
@@ -12,6 +14,8 @@ namespace img{
 
 
 auto detectAndCreate(std::istream&& input_stream) -> std::unique_ptr<Header>{
+	if(input_stream.fail()) throw JRException("io exception while reading file!");
+
 	std::istreambuf_iterator<char> it(input_stream);
 	std::vector<std::uint8_t> input_buffer(it, std::istreambuf_iterator<char>());
 	return detectAndCreate(input_buffer);

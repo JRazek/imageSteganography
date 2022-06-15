@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <ostream>
 #include <iostream>
@@ -29,8 +30,8 @@ public:
 
 auto show_help(){
 	constexpr std::string_view s=
-		"Usage: imagesteganography [OPTION] ...\n\n"
-
+		"Usage: imagesteganography [OPTION] ...\n"
+		"Supported formats:                       PPM-P6, Windows-BMP\n\n"
 		"-i, --info                               shows size, last modification date, image size\n"
 		"-e, --encrypt [FILE] \"[MESSAGE]\"         encrypts file with specified message\n"
 		"-d, --decrypt [FILE]                     decrypts file\n"
@@ -62,10 +63,9 @@ auto invalid_argument(){
 }
 
 auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& message) -> void{
-	std::ifstream input_stream(file, std::ios::binary);
-	auto header=img::detectAndCreate(std::move(input_stream));
-
 	try{
+		std::ifstream input_stream(file, std::ios::binary);
+		auto header=img::detectAndCreate(std::move(input_stream));
 		if(header->get_file_format()==img::ImageFormat::bmp){
 			img::encode_format<img::ImageFormat::bmp>(file, file, message);
 		}
@@ -73,18 +73,18 @@ auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& m
 			img::encode_format<img::ImageFormat::ppm>(file, file, message);
 		}
 		else assert(false);
-	}catch(std::invalid_argument const& e){
+
+		output_stream_<<"successfully encrypted "<<file<<'\n';
+	}catch(std::exception const& e){
 		output_stream_<<e.what()<<'\n';
 	}
-
-	output_stream_<<"successfully encoded "<<file<<'\n';
 }
 
 auto decrypt_message(std::string const& file) -> void{
-	std::ifstream input_stream(file, std::ios::binary);
-	auto header=img::detectAndCreate(std::move(input_stream));
-
 	try{
+		std::ifstream input_stream(file, std::ios::binary);
+		auto header=img::detectAndCreate(std::move(input_stream));
+
 		std::vector<std::uint8_t> result;
 
 		if(header->get_file_format()==img::ImageFormat::bmp){
@@ -96,8 +96,8 @@ auto decrypt_message(std::string const& file) -> void{
 		else assert(false);
 		std::string str(result.begin(), result.end());
 
-		output_stream_<<"encrypted message:\t\t\t"<<str<<'\n';
-	}catch(std::invalid_argument const& e){
+		output_stream_<<"successfully decrypted:\t\t\t"<<str<<'\n';
+	}catch(std::exception const& e){
 		output_stream_<<e.what()<<'\n';
 	}
 }
