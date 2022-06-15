@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "bitmap.hpp"
+#include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 #include <string>
 #include <iterator>
@@ -12,14 +13,18 @@
 #include <istream>
 #include <ostream>
 #include <fstream>
+#include <ranges>
+#include <range/v3/view/zip.hpp>
 
 
 
 namespace jr{
 namespace img{
 
+constexpr auto steganography_bit=0u;
+
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
-auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
+auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator output_it) -> void
 requires 
 std::ranges::input_range<InputTargetRange>
 &&
@@ -31,19 +36,22 @@ std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
 &&
 std::output_iterator<OutputIterator, std::uint8_t>
 {
-	std::ranges::copy(std::begin(in_target), std::end(in_target), out_target);
+	std::ranges::copy(in_target, output_it);
+
 	auto encoding_data=SteganographyImageMetadata::create_metadata_for_encrypting(in_target, in_message);
 
-	for(auto i=0u;i<8u;i++, ++out_target) *out_target=encoding_data.header_bytes_[i];
+	auto input_target_it=std::begin(in_target);
+
+	for(auto i=0u;i<8u;i++, ++output_it, ++input_target_it) *output_it=encoding_data.header_bytes_[i];
 
 	for(auto message_byte : in_message){
 		std::bitset<8> message_byte_bitset(message_byte);
-
-		for(auto i=0u;i<8u;i++,std::ranges::advance(out_target, encoding_data.shift_)){
-			auto bitmap_byte=std::bitset<8>();
-			bitmap_byte[0]=message_byte_bitset[i];
+		
+		for(auto i=0u;i<8u;i++,std::ranges::advance(output_it, encoding_data.shift_), std::ranges::advance(input_target_it, encoding_data.shift_)){
+			auto bitmap_byte=std::bitset<8>(*input_target_it);
+			bitmap_byte[steganography_bit]=message_byte_bitset[i];
 			
-			*out_target=bitmap_byte.to_ulong();
+			*output_it=bitmap_byte.to_ulong();
 		}
 	}
 
@@ -68,7 +76,7 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 		for(auto i=0u;i<8;i++, std::ranges::advance(in_it, decoding_data.shift_)){
 			auto bitmap_byte=std::bitset<8>(*in_it);
-			data_byte[i]=bitmap_byte[0];
+			data_byte[i]=bitmap_byte[steganography_bit];
 		}
 
 		*output_it=data_byte.to_ulong();
