@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include "bitmap.hpp"
 #include <string>
@@ -5,6 +7,7 @@
 #include <bitset>
 #include <iterator>
 #include <cassert>
+#include <span>
 
 
 namespace jr{
@@ -95,6 +98,57 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	}
 }
 
+template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
+auto encode_bmp(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
+requires 
+std::ranges::input_range<InputTargetRange>
+&&
+std::ranges::input_range<InputMessageRange>
+&&
+std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
+&&
+std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
+&&
+std::output_iterator<OutputIterator, std::uint8_t>{
+	std::vector<std::uint8_t> image_buffered(input_target);
+
+	BMPHeader header{image_buffered};
+
+	auto it=image_buffered.begin()+header.first_data_byte;
+
+	auto span=std::span{it, image_buffered.end()};
+
+	encode_message(span, message, it);
+
+	std::ranges::copy(image_buffered, output);
+}
+
+
+
+template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
+auto encode_ppm(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
+requires 
+std::ranges::input_range<InputTargetRange>
+&&
+std::ranges::input_range<InputMessageRange>
+&&
+std::same_as<typename InputTargetRange::iterator::value_type, std::uint8_t>
+&&
+std::same_as<typename InputMessageRange::iterator::value_type, std::uint8_t>
+&&
+std::output_iterator<OutputIterator, std::uint8_t>{
+	std::vector<std::uint8_t> image_buffered(input_target);
+
+	PPMHeader header{image_buffered};
+
+	auto it=image_buffered.begin()+header.first_data_byte;
+
+	auto span=std::span{it, image_buffered.end()};
+
+	encode_message(span, message, it);
+
+	std::ranges::copy(image_buffered, output);
+}
 
 
 }

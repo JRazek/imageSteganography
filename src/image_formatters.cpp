@@ -24,44 +24,31 @@
 namespace jr{
 namespace img{
 
-
-auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
-
 auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>;
-
-auto encode_ppm(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void;
 
 auto decode_ppm(std::istream&& input) -> std::vector<std::uint8_t>;
 
 
-auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& data) -> void{
+auto encode_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void{
 	std::ifstream input_str(input_path, std::ios::binary);
-	std::ofstream output_str(output_path, std::ios::binary | std::ios::trunc);
+	std::istreambuf_iterator<char> input_stream_it(input_str);
 
-	encode_bmp(std::move(input_str), std::move(output_str), data);
-}
+	std::vector<std::uint8_t> buffer_input(input_stream_it, std::istreambuf_iterator<char>());
+	std::vector<std::uint8_t> buffer_output;
 
-auto encode_bmp(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void{
-	std::istreambuf_iterator<char> input_stream_it(input);
-	std::ostreambuf_iterator<char> output_stream_it(output); 
-	
-	std::vector<std::uint8_t> image_buffered(input_stream_it, std::istreambuf_iterator<char>());
+	encode_bmp(buffer_input, message, std::back_inserter(buffer_output));
 
-	BMPHeader header{image_buffered};
+	std::ofstream output_str(output_path, std::ios::binary);
+	std::ostreambuf_iterator<char> output_stream_it(output_str);
 
-	auto it=image_buffered.begin()+header.first_data_byte;
-
-	auto span=std::span{it, image_buffered.end()};
-
-	encode_message(span, message, it);
-
-	std::ranges::copy(image_buffered, output_stream_it);
+	std::ranges::copy(buffer_output, output_stream_it);
 }
 
 auto decode_bmp(std::string const& input_path) -> std::vector<std::uint8_t>{
 	std::ifstream input_str(input_path, std::ios::binary);
 	return decode_bmp(std::move(input_str));
 }
+
 
 auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>{
 	std::istreambuf_iterator<char> input_stream_it(input);
@@ -81,26 +68,17 @@ auto decode_bmp(std::istream&& input) -> std::vector<std::uint8_t>{
 
 auto encode_ppm(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void{
 	std::ifstream input_str(input_path, std::ios::binary);
-	std::ofstream output_str(output_path, std::ios::binary | std::ios::trunc);
+	std::istreambuf_iterator<char> input_stream_it(input_str);
 
-	encode_ppm(std::move(input_str), std::move(output_str), message);
-}
+	std::vector<std::uint8_t> buffer_input(input_stream_it, std::istreambuf_iterator<char>());
+	std::vector<std::uint8_t> buffer_output;
 
-auto encode_ppm(std::istream&& input, std::ostream&& output, std::vector<std::uint8_t> const& message) -> void{
-	std::istreambuf_iterator<char> input_stream_it(input);
-	std::ostreambuf_iterator<char> output_stream_it(output); 
-	
-	std::vector<std::uint8_t> image_buffered(input_stream_it, std::istreambuf_iterator<char>());
+	encode_ppm(buffer_input, message, std::back_inserter(buffer_output));
 
-	PPMHeader header{image_buffered};
+	std::ofstream output_str(output_path, std::ios::binary);
+	std::ostreambuf_iterator<char> output_stream_it(output_str);
 
-	auto it=image_buffered.begin()+header.first_data_byte;
-
-	auto span=std::span{it, image_buffered.end()};
-
-	encode_message(span, message, it);
-
-	std::ranges::copy(image_buffered, output_stream_it);
+	std::ranges::copy(buffer_output, output_stream_it);
 }
 
 auto decode_ppm(std::string const& input_path) -> std::vector<std::uint8_t>{

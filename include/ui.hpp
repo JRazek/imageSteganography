@@ -1,14 +1,18 @@
 #pragma once
 
 #include "bitmap.hpp"
+#include "image_formatters.hpp"
 #include "utils.hpp"
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <ostream>
 #include <iostream>
 #include <filesystem>
 #include <chrono>
 #include <string>
+#include <vector>
+#include <cstring>
 
 
 namespace jr{
@@ -41,7 +45,6 @@ auto show_info(std::string const& file){
 
 
 	//couldnt use std::format in my compiler :<<
-
 	std::string s=
 		"last modification:                    "+time_string+'\n'+
 		"file size:                            "+std::to_string(header->get_file_size())+'\n'+
@@ -55,6 +58,21 @@ auto invalid_argument(){
 	output_stream_<<"invalid run. use -h or --help for help\n";
 }
 
+auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& message) -> void{
+	std::ifstream input_stream(file, std::ios::binary);
+	auto header=img::detectAndCreate(std::move(input_stream));
+
+	input_stream.close();
+
+	if(header->get_file_format()==img::ImageFormat::bmp){
+		img::encode_bmp(file, file, message);
+	}
+	else if(header->get_file_format()==img::ImageFormat::ppm){
+		img::encode_ppm(file, file, message);
+	}
+	else assert(false);
+}
+
 auto run(int argc, char **argv){
 	if(argc>=2){
 		std::string first=argv[1];
@@ -64,8 +82,9 @@ auto run(int argc, char **argv){
 		}
 		else if((first=="-e" || first=="--encrypt") && argc==4){
 			std::string file=argv[2];
-			std::string message=argv[3];
-			//encrypt message
+			std::vector<std::uint8_t> message(argv[3], argv[3]+std::strlen(argv[3]));
+			
+			encrypt_message(file, message);
 		}
 		else if((first=="-d" || first=="--decrypt") && argc==3){
 			std::string file=argv[1];

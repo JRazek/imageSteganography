@@ -12,13 +12,19 @@
 namespace jr{
 namespace img{
 
+enum class ImageFormat{
+	bmp,
+	ppm,
+};
+
 struct Header{
 	virtual auto get_image_size() -> std::size_t = 0;
 
 	virtual auto get_file_size() -> std::size_t = 0;
 
-	virtual ~Header() = default;
+	virtual auto get_file_format() -> ImageFormat =0;
 
+	virtual ~Header() = default;
 };
 
 struct BMPHeader : Header{
@@ -52,6 +58,8 @@ struct BMPHeader : Header{
 	auto get_image_size() -> std::size_t override { return image_size; }
 
 	auto get_file_size() -> std::size_t override { return file_size; }
+
+	auto get_file_format() -> ImageFormat override { return ImageFormat::bmp; }
 };
 
 struct PPMHeader : Header{
@@ -65,7 +73,7 @@ struct PPMHeader : Header{
 	{}
 
 	PPMHeader(std::vector<std::uint8_t> const& header){
-		if(header.size()<0x2) throw std::invalid_argument("invalid header size in bitmap");
+		if(header.size()<0x2) throw std::invalid_argument("invalid header size in ppm");
 
 		std::string format(header.begin(), header.begin()+0x2);
 		if(format!="P6") throw std::invalid_argument("invalid format!");
@@ -93,6 +101,8 @@ struct PPMHeader : Header{
 	auto get_image_size() -> std::size_t override { return image_size; }
 
 	auto get_file_size() -> std::size_t override { return file_size; }
+
+	auto get_file_format() -> ImageFormat override { return ImageFormat::ppm; }
 };
 
 auto detectAndCreate(std::istream&& input_stream) -> std::unique_ptr<Header>;
