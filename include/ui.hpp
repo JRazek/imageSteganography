@@ -104,19 +104,18 @@ auto check_encodable(std::string const& file, std::vector<std::uint8_t> const& m
 	std::ifstream input_stream(file, std::ios::binary);
 	auto header=img::detectAndCreate(std::move(input_stream));
 
-	try{
-		if(header->get_file_format()==img::ImageFormat::bmp){
-			img::check_encodable_bmp(file, file, message);
-		}
-		else if(header->get_file_format()==img::ImageFormat::ppm){
-
-		}
-		else assert(false);
-	}catch(std::invalid_argument const& e){
-		output_stream_<<e.what()<<'\n';
+	bool ok=false;
+	if(header->get_file_format()==img::ImageFormat::bmp){
+		ok=img::check_encodable_format<img::ImageFormat::bmp>(file, file, message);
 	}
-
-	output_stream_<<"successfully encoded "<<file<<'\n';
+	else if(header->get_file_format()==img::ImageFormat::ppm){
+		ok=img::check_encodable_format<img::ImageFormat::ppm>(file, file, message);
+	}
+	else assert(false);
+	
+	if(ok) output_stream_<<"successfully encoded to:"<<file<<'\n';
+	else output_stream_<<"cannot encode message to:"<<file<<'\n';
+	
 }
 
 auto run(int argc, char **argv){
@@ -146,7 +145,7 @@ auto run(int argc, char **argv){
 			show_help();
 		}
 		else if(first=="--letsplay"){
-			//easter egg?
+			//easter egg?::<<??
 		}
 		else{
 			invalid_argument();

@@ -18,8 +18,6 @@
 namespace jr{
 namespace img{
 
-auto check_encodable_bmp(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> bool;
-
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator out_target) -> void
 requires 
@@ -165,6 +163,31 @@ std::output_iterator<OutputIterator, std::uint8_t>{
 	decode_message(span, std::back_inserter(result));
 
 	return result;
+}
+
+
+template<ImageFormat format>
+auto check_encodable_format(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> bool{
+	std::ifstream input_str(input_path, std::ios::binary);
+	std::istreambuf_iterator<char> input_stream_it(input_str);
+
+	std::vector<std::uint8_t> image_buffered(input_stream_it, std::istreambuf_iterator<char>());
+
+	using HeaderType=typename ImageFormatHeader<format>::value_type;
+
+	try{
+		HeaderType header{image_buffered};
+
+		std::vector<std::uint8_t> result;
+
+		auto span=std::span{image_buffered.begin()+header.first_data_byte, image_buffered.end()};
+
+		SteganographyImageMetadata::create_metadata_for_encrypting(image_buffered, message);
+	}catch(...){ 
+		return false; 
+	}
+
+	return true;
 }
 
 
