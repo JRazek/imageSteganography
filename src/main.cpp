@@ -1,16 +1,16 @@
+#include <cassert>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
+
 #include "header_utils.hpp"
 #include "image_formatters.hpp"
 #include "ui.hpp"
-#include <fstream>
-#include <cassert>
 
-namespace jr{
-}
+namespace jr {}
 
-auto main(int argc, char **argv)->int{
-	jr::terminal_ui ui;
+auto main(int argc, char **argv) -> int {
+  jr::terminal_ui ui;
 
-	ui.run(argc, argv);
+  ui.run(argc, argv);
 }
