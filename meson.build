@@ -32,6 +32,7 @@ exec=executable(
     'src/main.cpp',
     'src/header_utils.cpp',
     'src/utils.cpp',
+    'src/ui.cpp',
     include_directories : incdir,
     cpp_args: build_args,
 	link_args: link_args,

@@ -7,10 +7,8 @@
 #include "image_formatters.hpp"
 #include "ui.hpp"
 
-namespace jr {}
-
 auto main(int argc, char **argv) -> int {
-  jr::terminal_ui ui;
+  jr::TerminalUI ui;
 
   ui.run(argc, argv);
 }
