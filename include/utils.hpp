@@ -12,6 +12,22 @@
 
 namespace jr {
 
+
+template<typename T>
+concept InputByteRange =
+std::ranges::input_range<T>
+&&
+std::same_as<std::ranges::range_value_t<T>, std::uint8_t>;
+
+template<typename T>
+concept OutputByteIterator = 
+std::output_iterator<T, std::uint8_t>;
+
+template<typename T>
+concept InputByteIterator = 
+std::input_iterator<T>
+&&
+std::same_as<typename T::value_type, std::uint8_t>;
 /**
  * @brief encodes regardless of architecture to bytes array
  *
@@ -51,9 +67,8 @@ auto to_little_endianness_bytes(std::integral auto n)
  *
  * @return number decoded
  */
-template <typename T, typename Range>
-auto bytes_to_little_endianess(Range range) -> T requires std::integral<T> &&
-    std::ranges::input_range<Range> && std::ranges::bidirectional_range<Range> {
+template <std::integral T, InputByteRange Range>
+auto bytes_to_little_endianess(Range range) -> T requires std::ranges::bidirectional_range<Range> {
   auto n = T(0);
 
   if constexpr (std::endian::native == std::endian::little) {
@@ -79,8 +94,8 @@ auto bytes_to_little_endianess(Range range) -> T requires std::integral<T> &&
  *
  * @return
  */
-template <std::integral T, std::input_iterator Iterator>
-auto bytes_to_little_endianess(Iterator input_it, std::size_t size) -> T {
+template <std::integral T>
+auto bytes_to_little_endianess(InputByteIterator auto input_it, std::size_t size) -> T {
   auto high = input_it;
   std::ranges::advance(high, size);
   return bytes_to_little_endianess<T>(std::ranges::subrange{input_it, high});
@@ -115,15 +130,9 @@ struct SteganographyImageMetadata {
    *
    * @return information object
    */
-  template <typename InputTargetRange, typename InputMessageRange>
-  static auto create_metadata_for_encrypting(InputTargetRange in_target,
-                                             InputMessageRange in_message)
-      -> SteganographyImageMetadata requires
-      std::ranges::input_range<InputTargetRange> &&
-      std::ranges::input_range<InputMessageRange> && std::same_as<
-          typename InputTargetRange::iterator::value_type, std::uint8_t> &&
-      std::same_as<typename InputMessageRange::iterator::value_type,
-                   std::uint8_t> {
+  static auto create_metadata_for_encrypting(InputByteRange auto in_target,
+                                             InputByteRange auto in_message)
+      -> SteganographyImageMetadata {
     auto target_size = std::ranges::distance(in_target);
     auto message_size = std::ranges::distance(in_message);
 
@@ -147,11 +156,8 @@ struct SteganographyImageMetadata {
    * @param in_target - range od encoded data
    * @return information object
    */
-  template <typename InputTargetRange>
-  static auto create_metadata_for_decrypting(InputTargetRange in_target)
-      -> SteganographyImageMetadata requires
-      std::ranges::input_range<InputTargetRange> && std::same_as<
-          typename InputTargetRange::iterator::value_type, std::uint8_t> {
+  static auto create_metadata_for_decrypting(InputByteRange auto in_target)
+      -> SteganographyImageMetadata{
     auto target_size = std::ranges::distance(in_target);
     auto message_size =
         bytes_to_little_endianess<std::size_t>(in_target | std::views::take(8));
@@ -202,6 +208,8 @@ class JRException : public std::exception {
  private:
   std::string message_;
 };
+
+
 
 }  // namespace jr
 

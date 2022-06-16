@@ -16,6 +16,7 @@
 #include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 
+
 namespace jr {
 namespace img {
 
@@ -31,16 +32,7 @@ constexpr auto steganography_bit = 0u;
  * @param in_message - input range, containing message to encrypt
  * @param output_it - output iterator to save to result
  */
-template <typename InputTargetRange, typename InputMessageRange,
-          typename OutputIterator>
-auto encode_message(InputTargetRange in_target, InputMessageRange in_message,
-                    OutputIterator output_it)
-    -> void requires std::ranges::input_range<InputTargetRange> &&
-    std::ranges::input_range<InputMessageRange> && std::same_as<
-        typename InputTargetRange::iterator::value_type, std::uint8_t> &&
-    std::same_as<typename InputMessageRange::iterator::value_type,
-                 std::uint8_t> &&
-    std::output_iterator<OutputIterator, std::uint8_t> {
+auto encode_message(InputByteRange auto in_target, InputByteRange auto in_message, OutputByteIterator auto output_it)-> void {
   std::ranges::copy(in_target, output_it);
 
   auto encoding_data =
@@ -71,11 +63,7 @@ auto encode_message(InputTargetRange in_target, InputMessageRange in_message,
  * @param in_target - input range, containing data to be decoded
  * @param output_it - output iterator to save to result
  */
-template <typename Range, typename OutputIterator>
-auto decode_message(Range in_target, OutputIterator output_it)
-    -> void requires std::ranges::input_range<Range> &&
-    std::same_as<typename Range::iterator::value_type, std::uint8_t> &&
-    std::output_iterator<OutputIterator, std::uint8_t> {
+auto decode_message(InputByteRange auto in_target, OutputByteIterator auto output_it) -> void  {
   auto decoding_data =
       SteganographyImageMetadata::create_metadata_for_decrypting(in_target);
 
@@ -138,7 +126,9 @@ auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t> {
                                          std::istreambuf_iterator<char>());
 
   std::vector<std::uint8_t> result;
-  return decode<format>(buffer_input, std::back_inserter(result));
+  decode<format>(buffer_input, std::back_inserter(result));
+
+  return result;
 }
 
 /**
@@ -166,16 +156,8 @@ struct ImageFormatHeader<img::ImageFormat::ppm> {
  *
  * @return
  */
-template <img::ImageFormat format, typename InputTargetRange,
-          typename InputMessageRange, typename OutputIterator>
-auto encode(InputTargetRange input_target, InputMessageRange message,
-            OutputIterator output)
-    -> void requires std::ranges::input_range<InputTargetRange> &&
-    std::ranges::input_range<InputMessageRange> && std::same_as<
-        typename InputTargetRange::iterator::value_type, std::uint8_t> &&
-    std::same_as<typename InputMessageRange::iterator::value_type,
-                 std::uint8_t> &&
-    std::output_iterator<OutputIterator, std::uint8_t> {
+template <img::ImageFormat format>
+auto encode(InputByteRange auto input_target, InputByteRange auto message, OutputByteIterator auto output) -> void  {
   std::vector<std::uint8_t> image_buffered(input_target);
 
   // since application could be expanded and more image types may be added,
@@ -193,28 +175,18 @@ auto encode(InputTargetRange input_target, InputMessageRange message,
   std::ranges::copy(image_buffered, output);
 }
 
-template <img::ImageFormat format, typename InputTargetRange,
-          typename OutputIterator>
-auto decode(InputTargetRange input_target, OutputIterator output)
-    -> std::vector<std::uint8_t>
-requires std::ranges::input_range<InputTargetRange> &&
-    std::same_as<typename InputTargetRange::iterator::value_type,
-                 std::uint8_t> &&
-    std::output_iterator<OutputIterator, std::uint8_t> {
+template <img::ImageFormat format>
+auto decode(InputByteRange auto input_target, OutputByteIterator auto output) -> void  {
   std::vector<std::uint8_t> image_buffered(input_target);
 
   using HeaderType = typename ImageFormatHeader<format>::value_type;
 
   HeaderType header{image_buffered};
 
-  std::vector<std::uint8_t> result;
-
   auto span = std::span{image_buffered.begin() + header.first_data_byte,
                         image_buffered.end()};
 
-  decode_message(span, std::back_inserter(result));
-
-  return result;
+  decode_message(span, output);
 }
 
 template <ImageFormat format>
