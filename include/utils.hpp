@@ -14,6 +14,15 @@
 
 namespace jr{
 
+
+/**
+* @brief encodes regardless of architecture to bytes array
+*
+* @tparam size - byte size of output
+* @param n number to encode
+*
+* @return array of size `size` in LSB order
+*/
 template<std::size_t size>
 auto to_little_endianness_bytes(std::integral auto n) -> std::array<std::uint8_t, size> {
 	 std::array<std::uint8_t, size> bytes;
@@ -31,6 +40,15 @@ auto to_little_endianness_bytes(std::integral auto n) -> std::array<std::uint8_t
 auto to_little_endianness_bytes(std::integral auto n) -> std::array<std::uint8_t, sizeof(n)> { return to_little_endianness_bytes<sizeof(n)>(n); }
 
 
+/**
+ * @brief decodes regardless of architecture to number represented by little endianness bytes passed to function
+ *
+ * @tparam T
+ * @tparam Range
+ * @param range
+ *
+ * @return number decoded
+ */
 template<typename T,typename Range>
 auto bytes_to_little_endianess(Range range) -> T 
 requires
@@ -57,23 +75,52 @@ std::ranges::bidirectional_range<Range>
 	return n;
 }
 
+/**
+ * @brief 
+ *
+ * @param input_it - iterator with a bytes to decode
+ * @param size - size of range
+ *
+ * @return 
+ */
 template<
 std::integral T,
 std::input_iterator Iterator 
 >
-auto bytes_to_little_endianess(Iterator low, std::size_t size) -> T {
-	auto high=low; std::ranges::advance(high, size);
-	return bytes_to_little_endianess<T>(std::ranges::subrange{low, high}); 
+auto bytes_to_little_endianess(Iterator input_it, std::size_t size) -> T {
+	auto high=input_it; std::ranges::advance(high, size);
+	return bytes_to_little_endianess<T>(std::ranges::subrange{input_it, high}); 
 }
 
+/**
+ * @brief - last modification date of a file
+ *
+ * @param file - file path to check
+ *
+ * @return - modification date
+ */
 auto get_last_write_as_string(std::string const& file) -> std::string;
 
+
+/**
+ * @brief Added in order to use the same system for encoding and checking 
+ */
 struct SteganographyImageMetadata{
 	std::size_t const target_size_;
 	std::uint8_t message_size_;
 	std::array<std::uint8_t, 8> const header_bytes_;
 	std::size_t const shift_;
 
+	/**
+	 * @brief - creates information object for encrypting and decrypting from input and message
+	 *
+	 * @tparam InputTargetRange
+	 * @tparam InputMessageRange
+	 * @param in_target - range of data for encoding
+	 * @param in_message - message to encode
+	 *
+	 * @return information object
+	 */
 	template<typename InputTargetRange, typename InputMessageRange>
 	static auto create_metadata_for_encrypting(InputTargetRange in_target, InputMessageRange in_message) -> SteganographyImageMetadata
 	requires 
@@ -103,6 +150,13 @@ struct SteganographyImageMetadata{
 		);
 	}
 
+	/**
+	 * @brief - creates information object for encrypting and decrypting from encrypted message
+	 *
+	 * @tparam InputTargetRange
+	 * @param in_target - range od encoded data
+	 * @return information object
+	 */
 	template<typename InputTargetRange>
 	static auto create_metadata_for_decrypting(InputTargetRange in_target) -> SteganographyImageMetadata
 	requires 
@@ -141,6 +195,11 @@ private:
 	shift_(shift){}
 };
 
+
+/**
+ * @brief detects if target architecture is linux
+ *
+ */
 constexpr auto is_linux_machine() noexcept -> bool{
 #ifdef __linux 
 #define IS_LINUX_MACHINE true
@@ -152,15 +211,15 @@ constexpr auto is_linux_machine() noexcept -> bool{
 	return kIs_linux;
 }
 
+
 class JRException : public std::exception {
 public:
 	JRException(const std::string& message) : message_(message){};
-
 	const char* what() const noexcept override { return message_.c_str(); }
-
 private:
 	std::string message_;
 };
+
 
 }
 

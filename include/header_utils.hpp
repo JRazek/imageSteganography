@@ -18,6 +18,10 @@ enum class ImageFormat{
 	ppm,
 };
 
+
+/**
+ * @brief class used for generic information fetching from different headers.
+ */
 struct Header{
 	virtual auto get_image_size() -> std::size_t = 0;
 
@@ -106,8 +110,15 @@ struct PPMHeader : Header{
 	auto get_file_format() -> ImageFormat override { return ImageFormat::ppm; }
 };
 
-auto detectAndCreate(std::istream&& input_stream) -> std::unique_ptr<Header>;
-auto detectAndCreate(std::vector<std::uint8_t> const& header_bytes) -> std::unique_ptr<Header>;
+
+/**
+* @brief - detects format and creates polymorphic header type containing required information about file
+* @throw - throws JRException if file is none the supported formats of io error has occured
+* @param file to detect
+*
+* @return polymorphic header type
+*/
+auto detectAndCreate(std::string const file) -> std::unique_ptr<Header>;
 
 
 }

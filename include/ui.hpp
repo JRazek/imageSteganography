@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bitmap.hpp"
+#include "header_utils.hpp"
 #include "image_formatters.hpp"
 #include "utils.hpp"
 #include <chrono>
@@ -42,8 +42,7 @@ auto show_help(){
 }
 
 auto show_info(std::string const& file){
-	std::ifstream input_stream(file, std::ios::binary);
-	auto header=img::detectAndCreate(std::move(input_stream));
+	auto header=img::detectAndCreate(file);
 
 	auto time_string=get_last_write_as_string(file);
 
@@ -64,8 +63,7 @@ auto invalid_argument(){
 
 auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& message) -> void{
 	try{
-		std::ifstream input_stream(file, std::ios::binary);
-		auto header=img::detectAndCreate(std::move(input_stream));
+		auto header=img::detectAndCreate(file);
 		if(header->get_file_format()==img::ImageFormat::bmp){
 			img::encode_format<img::ImageFormat::bmp>(file, file, message);
 		}
@@ -82,8 +80,7 @@ auto encrypt_message(std::string const& file, std::vector<std::uint8_t> const& m
 
 auto decrypt_message(std::string const& file) -> void{
 	try{
-		std::ifstream input_stream(file, std::ios::binary);
-		auto header=img::detectAndCreate(std::move(input_stream));
+		auto header=img::detectAndCreate(file);
 
 		std::vector<std::uint8_t> result;
 
@@ -103,8 +100,7 @@ auto decrypt_message(std::string const& file) -> void{
 }
 
 auto check_encodable(std::string const& file, std::vector<std::uint8_t> const& message) -> void{
-	std::ifstream input_stream(file, std::ios::binary);
-	auto header=img::detectAndCreate(std::move(input_stream));
+	auto header=img::detectAndCreate(file);
 
 	bool ok=false;
 	if(header->get_file_format()==img::ImageFormat::bmp){

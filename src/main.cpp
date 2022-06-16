@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <iostream>
-#include "bitmap.hpp"
+#include "header_utils.hpp"
 #include "image_formatters.hpp"
 #include "ui.hpp"
 #include <fstream>

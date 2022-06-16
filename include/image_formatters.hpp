@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "bitmap.hpp"
+#include "header_utils.hpp"
 #include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 #include <string>
@@ -21,8 +21,20 @@
 namespace jr{
 namespace img{
 
+
+/**
+ * @brief - which of bits edited. Possible to implement with increasing importance - this would allow bigger messages.
+ */
 constexpr auto steganography_bit=0u;
 
+
+
+/**
+ * @brief - encodes message into output_it
+ * @param in_target - input range, containing data to be encoded
+ * @param in_message - input range, containing message to encrypt
+ * @param output_it - output iterator to save to result
+ */
 template<typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode_message(InputTargetRange in_target, InputMessageRange in_message, OutputIterator output_it) -> void
 requires 
@@ -57,7 +69,11 @@ std::output_iterator<OutputIterator, std::uint8_t>
 
 }
 
-
+/**
+ * @brief - decodes message into output_it
+ * @param in_target - input range, containing data to be decoded
+ * @param output_it - output iterator to save to result
+ */
 template<typename Range, typename OutputIterator>
 auto decode_message(Range in_target, OutputIterator output_it) -> void
 requires
@@ -83,6 +99,14 @@ std::output_iterator<OutputIterator, std::uint8_t>
 	}
 }
 
+/**
+ * @brief encodes message
+ *
+ * @tparam format - format of the file
+ * @param input_path - path of file to encode
+ * @param output_path - path of file to save the result (may be the same as input)
+ * @param message - message to encode
+ */
 template<ImageFormat format>
 auto encode_format(std::string const& input_path, std::string const& output_path, std::vector<std::uint8_t> const& message) -> void{
 	std::ifstream input_str(input_path, std::ios::binary);
@@ -99,6 +123,12 @@ auto encode_format(std::string const& input_path, std::string const& output_path
 	std::ranges::copy(buffer_output, output_stream_it);
 }
 
+/**
+* @brief decodes message
+* @tparam format - format of the file
+* @param input_path - path of file to encode
+* @return message decoded
+*/
 template<ImageFormat format>
 auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t>{
 	std::ifstream input_stream(input_path, std::ios::binary);
@@ -111,15 +141,24 @@ auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t>{
 }
 
 
+/**
+ * @tparam template specializations for different header types
+ */
 template<img::ImageFormat format> struct ImageFormatHeader{ };
 
 template<> struct ImageFormatHeader<img::ImageFormat::bmp>{ using value_type=BMPHeader; };
 
 template<> struct ImageFormatHeader<img::ImageFormat::ppm>{ using value_type=PPMHeader; };
 
-/*
- * generates format specfic
+
+/**
  *
+ * @tparam format - format of the input
+ * @param input_target - input range to encode
+ * @param message - message to encode
+ * @param 
+ *
+ * @return 
  */
 template<img::ImageFormat format, typename InputTargetRange, typename InputMessageRange, typename OutputIterator>
 auto encode(InputTargetRange input_target, InputMessageRange message, OutputIterator output) -> void
