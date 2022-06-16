@@ -16,7 +16,7 @@ link_args=[]
 
 
 if get_option('build')=='release'
-    build_args += ['-DNDEBUG']
+    build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
 else
 	build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
 	link_args += build_args 
