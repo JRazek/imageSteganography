@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -34,3 +35,4 @@ class TerminalUI {
 };
 
 }  // namespace jr
+

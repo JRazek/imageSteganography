@@ -248,3 +248,4 @@ auto check_encodable_format(std::string const& input_path,
 
 }  // namespace img
 }  // namespace jr
+
