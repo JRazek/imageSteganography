@@ -149,4 +149,3 @@ auto TerminalUI::invalid_argument() -> void {
 }
 
 }  // namespace jr
-

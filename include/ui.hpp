@@ -35,4 +35,3 @@ class TerminalUI {
 };
 
 }  // namespace jr
-

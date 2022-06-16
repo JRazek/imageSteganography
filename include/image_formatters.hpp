@@ -16,9 +16,80 @@
 #include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 
-
 namespace jr {
 namespace img {
+
+/**
+ * @brief Added in order to use the same system for encoding and checking
+ */
+struct SteganographyImageMetadata {
+  std::size_t const target_size_;
+  std::uint8_t message_size_;
+  std::array<std::uint8_t, 8> const header_bytes_;
+  std::size_t const shift_;
+
+  /**
+   * @brief - creates information object for encrypting and decrypting from
+   * input and message
+   *
+   * @param in_target - range of data for encoding
+   * @param in_message - message to encode
+   *
+   * @return information object
+   */
+  static auto create_metadata_for_encrypting(InputByteRange auto in_target,
+                                             InputByteRange auto in_message)
+      -> SteganographyImageMetadata {
+    auto target_size = std::ranges::distance(in_target);
+    auto message_size = std::ranges::distance(in_message);
+
+    if (!target_size || !message_size)
+      std::invalid_argument("invalid file contents!");
+
+    auto header_bytes = to_little_endianness_bytes<8>(message_size);
+    auto shift = (target_size - 8) / (message_size * 8);
+
+    if (!shift) throw std::invalid_argument("message too big!");
+
+    return SteganographyImageMetadata(target_size, message_size, header_bytes,
+                                      shift);
+  }
+
+  /**
+   * @brief - creates information object for encrypting and decrypting from
+   * encrypted message
+   *
+   * @param in_target - range od encoded data
+   * @return information object
+   */
+  static auto create_metadata_for_decrypting(InputByteRange auto in_target)
+      -> SteganographyImageMetadata {
+    auto target_size = std::ranges::distance(in_target);
+    auto message_size =
+        bytes_to_little_endianess<std::size_t>(in_target | std::views::take(8));
+
+    if (!target_size || !message_size)
+      std::invalid_argument("invalid file contents!");
+
+    auto header_bytes = to_little_endianness_bytes<8>(message_size);
+    auto shift = (target_size - 8) / (message_size * 8);
+
+    if (!shift) throw std::invalid_argument("message too big!");
+
+    return SteganographyImageMetadata(target_size, message_size, header_bytes,
+                                      shift);
+  }
+
+ private:
+  SteganographyImageMetadata(std::size_t const target_size,
+                             std::uint8_t message_size,
+                             std::array<std::uint8_t, 8> const header_bytes,
+                             std::size_t const shift)
+      : target_size_(target_size),
+        message_size_(message_size),
+        header_bytes_(header_bytes),
+        shift_(shift) {}
+};
 
 /**
  * @brief - which of bits edited. Possible to implement with increasing
@@ -32,7 +103,9 @@ constexpr auto steganography_bit = 0u;
  * @param in_message - input range, containing message to encrypt
  * @param output_it - output iterator to save to result
  */
-auto encode_message(InputByteRange auto in_target, InputByteRange auto in_message, OutputByteIterator auto output_it)-> void {
+auto encode_message(InputByteRange auto in_target,
+                    InputByteRange auto in_message,
+                    OutputByteIterator auto output_it) -> void {
   std::ranges::copy(in_target, output_it);
 
   auto encoding_data =
@@ -63,7 +136,8 @@ auto encode_message(InputByteRange auto in_target, InputByteRange auto in_messag
  * @param in_target - input range, containing data to be decoded
  * @param output_it - output iterator to save to result
  */
-auto decode_message(InputByteRange auto in_target, OutputByteIterator auto output_it) -> void  {
+auto decode_message(InputByteRange auto in_target,
+                    OutputByteIterator auto output_it) -> void {
   auto decoding_data =
       SteganographyImageMetadata::create_metadata_for_decrypting(in_target);
 
@@ -157,7 +231,8 @@ struct ImageFormatHeader<img::ImageFormat::ppm> {
  * @return
  */
 template <img::ImageFormat format>
-auto encode(InputByteRange auto input_target, InputByteRange auto message, OutputByteIterator auto output) -> void  {
+auto encode(InputByteRange auto input_target, InputByteRange auto message,
+            OutputByteIterator auto output) -> void {
   std::vector<std::uint8_t> image_buffered(input_target);
 
   // since application could be expanded and more image types may be added,
@@ -176,7 +251,8 @@ auto encode(InputByteRange auto input_target, InputByteRange auto message, Outpu
 }
 
 template <img::ImageFormat format>
-auto decode(InputByteRange auto input_target, OutputByteIterator auto output) -> void  {
+auto decode(InputByteRange auto input_target, OutputByteIterator auto output)
+    -> void {
   std::vector<std::uint8_t> image_buffered(input_target);
 
   using HeaderType = typename ImageFormatHeader<format>::value_type;
@@ -220,4 +296,3 @@ auto check_encodable_format(std::string const& input_path,
 
 }  // namespace img
 }  // namespace jr
-

@@ -15,4 +15,3 @@ auto get_last_write_as_string(std::string const& file) -> std::string {
 }
 
 }  // namespace jr
-

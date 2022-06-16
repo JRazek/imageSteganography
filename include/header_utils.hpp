@@ -131,4 +131,3 @@ auto detectAndCreate(std::string const file) -> std::unique_ptr<Header>;
 
 }  // namespace img
 }  // namespace jr
-

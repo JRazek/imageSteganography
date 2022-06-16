@@ -12,4 +12,3 @@ auto main(int argc, char **argv) -> int {
 
   ui.run(argc, argv);
 }
-
