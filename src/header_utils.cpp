@@ -11,8 +11,7 @@
 
 #include "utils.hpp"
 
-namespace jr {
-namespace img {
+namespace jr::img {
 
 /**
  * @brief - detects format and creates polymorphic header type containing
@@ -39,7 +38,7 @@ auto detectAndCreate(std::vector<std::uint8_t> const& header_bytes)
   return header;
 }
 
-auto detectAndCreate(std::string const file) -> std::unique_ptr<Header> {
+auto detectAndCreate(std::string const& file) -> std::unique_ptr<Header> {
   std::ifstream input_stream(file, std::ios::binary);
   if (input_stream.fail())
     throw JRException("io exception while reading file!");
@@ -49,5 +48,5 @@ auto detectAndCreate(std::string const file) -> std::unique_ptr<Header> {
   return detectAndCreate(input_buffer);
 }
 
-}  // namespace img
-}  // namespace jr
+}  // namespace jr::img
+

@@ -1,4 +1,3 @@
-
 #include "ui.hpp"
 
 #include <chrono>
@@ -135,8 +134,8 @@ auto TerminalUI::run(int argc, char** argv) -> void {
     } else if (first == "-h" || first == "--help") {
       show_help();
     } else if (first == "--helpmepls" && is_linux_machine()) {
-      auto res=std::system("vim --cmd \"help 42\"");
-	  if(res) std::cerr<<"rip :<<";
+      auto res = std::system("vim --cmd \"help 42\"");
+      if (res) std::cerr << "rip :<<";
     } else {
       invalid_argument();
     }

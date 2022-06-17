@@ -16,8 +16,7 @@
 #include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 
-namespace jr {
-namespace img {
+namespace jr::img {
 
 /**
  * @brief Added in order to use the same system for encoding and checking
@@ -44,7 +43,7 @@ struct SteganographyImageMetadata {
     auto message_size = std::ranges::distance(in_message);
 
     if (!target_size || !message_size)
-      std::invalid_argument("invalid file contents!");
+      throw std::invalid_argument("invalid file contents!");
 
     auto header_bytes = to_little_endianness_bytes<8>(message_size);
     auto shift = (target_size - 8) / (message_size * 8);
@@ -65,11 +64,11 @@ struct SteganographyImageMetadata {
   static auto create_metadata_for_decrypting(InputByteRange auto in_target)
       -> SteganographyImageMetadata {
     auto target_size = std::ranges::distance(in_target);
-    auto message_size =
-        bytes_to_little_endianess<std::size_t>(in_target | std::views::take(8));
+    auto message_size = bytes_to_little_endianness<std::size_t>(
+        in_target | std::views::take(8));
 
     if (!target_size || !message_size)
-      std::invalid_argument("invalid file contents!");
+      throw std::invalid_argument("invalid file contents!");
 
     auto header_bytes = to_little_endianness_bytes<8>(message_size);
     auto shift = (target_size - 8) / (message_size * 8);
@@ -144,7 +143,7 @@ auto decode_message(InputByteRange auto in_target,
   auto in_it = std::begin(in_target);
   std::ranges::advance(in_it, 8);
 
-  for (auto i = 0u; i < decoding_data.message_size_; i++, ++output_it) {
+  for (auto j = 0u; j < decoding_data.message_size_; j++, ++output_it) {
     std::bitset<8> data_byte;
 
     for (auto i = 0u; i < 8;
@@ -294,5 +293,5 @@ auto check_encodable_format(std::string const& input_path,
   return true;
 }
 
-}  // namespace img
-}  // namespace jr
+}  // namespace jr::img
+

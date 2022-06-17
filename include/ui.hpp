@@ -12,7 +12,7 @@ namespace jr {
  */
 class TerminalUI {
  public:
-  TerminalUI(std::ostream& output_stream = std::cout);
+  explicit TerminalUI(std::ostream& output_stream = std::cout);
 
   auto show_help() -> void;
 
@@ -35,3 +35,4 @@ class TerminalUI {
 };
 
 }  // namespace jr
+

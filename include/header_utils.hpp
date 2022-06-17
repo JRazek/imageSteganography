@@ -10,8 +10,7 @@
 
 #include "utils.hpp"
 
-namespace jr {
-namespace img {
+namespace jr::img {
 
 enum class ImageFormat {
   bmp,
@@ -40,11 +39,11 @@ struct BMPHeader : Header {
 
   std::uint32_t image_size;
 
-  BMPHeader(std::istreambuf_iterator<char> input_stream_it)
+  explicit BMPHeader(std::istreambuf_iterator<char> input_stream_it)
       : BMPHeader(std::vector<std::uint8_t>(
             input_stream_it, std::istreambuf_iterator<char>())) {}
 
-  BMPHeader(std::vector<std::uint8_t> const& header) {
+  explicit BMPHeader(std::vector<std::uint8_t> const& header) {
     if (header.size() < 0x26)
       throw JRException("invalid header size in bitmap");
 
@@ -52,17 +51,17 @@ struct BMPHeader : Header {
     if (format != "BM") throw JRException("unsupported bmp format");
 
     file_size =
-        bytes_to_little_endianess<std::uint32_t>(header.begin() + 0x2, 4);
+        bytes_to_little_endianness<std::uint32_t>(header.begin() + 0x2, 4);
     first_data_byte =
-        bytes_to_little_endianess<std::uint32_t>(header.begin() + 0xA, 4);
+        bytes_to_little_endianness<std::uint32_t>(header.begin() + 0xA, 4);
 
     reserved1 =
-        bytes_to_little_endianess<std::uint16_t>(header.begin() + 0x6, 8);
+        bytes_to_little_endianness<std::uint16_t>(header.begin() + 0x6, 8);
     reserved2 =
-        bytes_to_little_endianess<std::uint16_t>(header.begin() + 0x8, 10);
+        bytes_to_little_endianness<std::uint16_t>(header.begin() + 0x8, 10);
 
     image_size =
-        bytes_to_little_endianess<std::uint32_t>(header.begin() + 0x22, 4);
+        bytes_to_little_endianness<std::uint32_t>(header.begin() + 0x22, 4);
   }
 
   auto get_image_size() -> std::size_t override { return image_size; }
@@ -76,9 +75,9 @@ struct PPMHeader : Header {
   std::uint32_t file_size;
   std::uint32_t first_data_byte;
 
-  std::uint32_t image_size;
+  std::uint32_t image_size{};
 
-  PPMHeader(std::istreambuf_iterator<char> input_stream_it)
+  explicit PPMHeader(std::istreambuf_iterator<char> input_stream_it)
       : PPMHeader(std::vector<std::uint8_t>(
             input_stream_it, std::istreambuf_iterator<char>())) {}
 
@@ -122,12 +121,12 @@ struct PPMHeader : Header {
  * @brief - detects format and creates polymorphic header type containing
  * required information about file
  * @throw - throws JRException if file is none the supported formats of io error
- * has occured
+ * has occurred
  * @param file to detect
  *
  * @return polymorphic header type
  */
-auto detectAndCreate(std::string const file) -> std::unique_ptr<Header>;
+auto detectAndCreate(std::string const& file) -> std::unique_ptr<Header>;
 
-}  // namespace img
-}  // namespace jr
+}  // namespace jr::img
+

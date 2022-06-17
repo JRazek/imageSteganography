@@ -9,6 +9,7 @@
 #include <iterator>
 #include <numeric>
 #include <ranges>
+#include <utility>
 
 namespace jr {
 
@@ -61,7 +62,7 @@ auto to_little_endianness_bytes(std::integral auto n)
  * @return number decoded
  */
 template <std::integral T, InputByteRange Range>
-auto bytes_to_little_endianess(Range range)
+auto bytes_to_little_endianness(Range range)
     -> T requires std::ranges::bidirectional_range<Range> {
   auto n = T(0);
 
@@ -89,11 +90,11 @@ auto bytes_to_little_endianess(Range range)
  * @return
  */
 template <std::integral T>
-auto bytes_to_little_endianess(InputByteIterator auto input_it,
-                               std::size_t size) -> T {
+auto bytes_to_little_endianness(InputByteIterator auto input_it,
+                                std::size_t size) -> T {
   auto high = input_it;
   std::ranges::advance(high, size);
-  return bytes_to_little_endianess<T>(std::ranges::subrange{input_it, high});
+  return bytes_to_little_endianness<T>(std::ranges::subrange{input_it, high});
 }
 
 /**
@@ -122,7 +123,7 @@ constexpr auto is_linux_machine() noexcept -> bool {
 
 class JRException : public std::exception {
  public:
-  JRException(const std::string& message) : message_(message){};
+  explicit JRException(std::string message) : message_(std::move(message)){};
   const char* what() const noexcept override { return message_.c_str(); }
 
  private:
@@ -130,3 +131,4 @@ class JRException : public std::exception {
 };
 
 }  // namespace jr
+
