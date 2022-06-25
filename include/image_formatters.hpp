@@ -157,54 +157,6 @@ auto decode_message(InputByteRange auto in_target,
 }
 
 /**
- * @brief encodes message
- *
- * @tparam format - format of the file
- * @param input_path - path of file to encode
- * @param output_path - path of file to save the result (may be the same as
- * input)
- * @param message - message to encode
- */
-template <ImageFormat format>
-auto encode_format(std::string const& input_path,
-                   std::string const& output_path,
-                   std::vector<std::uint8_t> const& message) -> void {
-  std::ifstream input_str(input_path, std::ios::binary);
-  std::istreambuf_iterator<char> input_stream_it(input_str);
-
-  std::vector<std::uint8_t> buffer_input(input_stream_it,
-                                         std::istreambuf_iterator<char>());
-  std::vector<std::uint8_t> buffer_output;
-
-  encode<format>(buffer_input, message, std::back_inserter(buffer_output));
-
-  std::ofstream output_str(output_path, std::ios::binary);
-  std::ostreambuf_iterator<char> output_stream_it(output_str);
-
-  std::ranges::copy(buffer_output, output_stream_it);
-}
-
-/**
- * @brief decodes message
- * @tparam format - format of the file
- * @param input_path - path of file to encode
- * @return message decoded
- */
-template <ImageFormat format>
-auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t> {
-  std::ifstream input_stream(input_path, std::ios::binary);
-
-  std::istreambuf_iterator<char> input_stream_it(input_stream);
-  std::vector<std::uint8_t> buffer_input(input_stream_it,
-                                         std::istreambuf_iterator<char>());
-
-  std::vector<std::uint8_t> result;
-  decode<format>(buffer_input, std::back_inserter(result));
-
-  return result;
-}
-
-/**
  * @tparam template specializations for different header types
  */
 template <img::ImageFormat format>
@@ -264,6 +216,54 @@ auto decode(InputByteRange auto input_target, OutputByteIterator auto output)
   decode_message(span, output);
 }
 
+/**
+ * @brief encodes message
+ *
+ * @tparam format - format of the file
+ * @param input_path - path of file to encode
+ * @param output_path - path of file to save the result (may be the same as
+ * input)
+ * @param message - message to encode
+ */
+template <ImageFormat format>
+auto encode_format(std::string const& input_path,
+                   std::string const& output_path,
+                   std::vector<std::uint8_t> const& message) -> void {
+  std::ifstream input_str(input_path, std::ios::binary);
+  std::istreambuf_iterator<char> input_stream_it(input_str);
+
+  std::vector<std::uint8_t> buffer_input(input_stream_it,
+                                         std::istreambuf_iterator<char>());
+  std::vector<std::uint8_t> buffer_output;
+
+  encode<format>(buffer_input, message, std::back_inserter(buffer_output));
+
+  std::ofstream output_str(output_path, std::ios::binary);
+  std::ostreambuf_iterator<char> output_stream_it(output_str);
+
+  std::ranges::copy(buffer_output, output_stream_it);
+}
+
+/**
+ * @brief decodes message
+ * @tparam format - format of the file
+ * @param input_path - path of file to encode
+ * @return message decoded
+ */
+template <ImageFormat format>
+auto decode_format(std::string const& input_path) -> std::vector<std::uint8_t> {
+  std::ifstream input_stream(input_path, std::ios::binary);
+
+  std::istreambuf_iterator<char> input_stream_it(input_stream);
+  std::vector<std::uint8_t> buffer_input(input_stream_it,
+                                         std::istreambuf_iterator<char>());
+
+  std::vector<std::uint8_t> result;
+  decode<format>(buffer_input, std::back_inserter(result));
+
+  return result;
+}
+
 template <ImageFormat format>
 auto check_encodable_format(std::string const& input_path,
                             std::string const& output_path,
@@ -294,4 +294,3 @@ auto check_encodable_format(std::string const& input_path,
 }
 
 }  // namespace jr::img
-
