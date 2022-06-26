@@ -97,6 +97,7 @@ struct PPMHeader : Header {
 
     while (it != header.end() && line_num < 3) {
       if (*it == '\n') {
+		++it;
         if (it != header.end() && *it != '#')
           ++line_num;  // this will ignore all lines starting with #
       }
