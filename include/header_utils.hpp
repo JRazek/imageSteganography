@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "utils.hpp"
 
@@ -75,13 +76,13 @@ struct PPMHeader : Header {
   std::uint32_t file_size;
   std::uint32_t first_data_byte;
 
-  std::uint32_t image_size{};
+  std::uint32_t image_size;
 
   explicit PPMHeader(std::istreambuf_iterator<char> input_stream_it)
       : PPMHeader(std::vector<std::uint8_t>(
             input_stream_it, std::istreambuf_iterator<char>())) {}
 
-  PPMHeader(std::vector<std::uint8_t> const& header) {
+  explicit PPMHeader(std::vector<std::uint8_t> const& header) {
     if (header.size() < 0x2)
       throw JRException("invalid header size in ppm " +
                         std::to_string(header.size()));
@@ -93,17 +94,43 @@ struct PPMHeader : Header {
 
     std::size_t line_num = 0;
 
-    auto test = 0;
+	std::vector<std::uint8_t> space_separated_nums;
 
+	bool is_comment=false;
     while (it != header.end() && line_num < 3) {
+
       if (*it == '\n') {
 		++it;
-        if (it != header.end() && *it != '#')
+        if (it != header.end() && *it != '#'){
           ++line_num;  // this will ignore all lines starting with #
-      }
-      ++it;
-      test++;
+		  is_comment=false;
+		}
+      }else{
+		  if(*it == '#'){ is_comment=true; }
+		  else if(!is_comment && line_num>0){
+			space_separated_nums.push_back(*it);
+		  }
+		  ++it;
+	  }
+	
     }
+
+	image_size=1;
+
+	space_separated_nums.push_back(' ');
+
+	std::uint32_t num=0;
+
+	for(auto ch : space_separated_nums){
+		if(ch!=' '){
+			num *= 10;
+			num += ch-'0';
+		}
+		else{
+			image_size *= num;
+			num=0;
+		}
+	}
 
     if (line_num != 3) throw JRException("ppm P6 corrupted!");
 
