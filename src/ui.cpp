@@ -44,7 +44,7 @@ auto TerminalUI::show_info(std::string const& file) -> void {
   std::string s = "last modification:                    " + time_string +
                   '\n' + "file size:                            " +
                   std::to_string(header->get_file_size()) + '\n' +
-                  "image size                            " +
+                  "image size:                           " +
                   std::to_string(header->get_image_size()) + '\n' + "\n";
 
   output_stream_ << s;
