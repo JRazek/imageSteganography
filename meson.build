@@ -16,15 +16,16 @@ link_args=[]
 
 
 if get_option('build')=='release'
-    build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
+  build_args += ['-O3', '-Wall', '-DNDEBUG', '-g0', '-s']
 else
-	build_args += ['-g3','-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address,', '-Wall']
-	link_args += build_args 
+  build_args += ['-g3', '-Wall']
+
+  if cpp.get_id() == 'gcc'
+    build_args += ['-fsanitize=undefined,float-cast-overflow,float-divide-by-zero,bounds-strict,address']
+  endif
+
+  link_args += build_args 
 endif
-
-range_v3 = subproject('range-v3')
-
-range_v3 = range_v3.get_variable('range_v3')
 
 
 exec=executable(
@@ -36,6 +37,6 @@ exec=executable(
     include_directories : incdir,
     cpp_args: build_args,
 	link_args: link_args,
-    dependencies: [range_v3]
+    dependencies: []
 )
 

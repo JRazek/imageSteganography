@@ -6,14 +6,12 @@
 #include <istream>
 #include <iterator>
 #include <ostream>
-#include <range/v3/view/zip.hpp>
 #include <ranges>
 #include <span>
 #include <string>
 #include <vector>
 
 #include "header_utils.hpp"
-#include "range/v3/view/zip_with.hpp"
 #include "utils.hpp"
 
 namespace jr::img {
