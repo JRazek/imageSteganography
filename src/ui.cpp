@@ -16,7 +16,7 @@
 
 namespace jr {
 
-TerminalUI::TerminalUI(std::ostream& output_stream)
+TerminalUI::TerminalUI(std::ostream &output_stream)
     : output_stream_(output_stream) {}
 
 auto TerminalUI::show_help() -> void {
@@ -35,7 +35,7 @@ auto TerminalUI::show_help() -> void {
   output_stream_ << s;
 }
 
-auto TerminalUI::show_info(std::string const& file) -> void {
+auto TerminalUI::show_info(std::string const &file) -> void {
   auto header = img::detectAndCreate(file);
 
   auto time_string = get_last_write_as_string(file);
@@ -50,9 +50,8 @@ auto TerminalUI::show_info(std::string const& file) -> void {
   output_stream_ << s;
 }
 
-auto TerminalUI::encrypt_message(std::string const& file,
-                                 std::vector<std::uint8_t> const& message)
-    -> void {
+auto TerminalUI::encrypt_message(std::string const &file,
+                                 std::vector<uint8_t> const &message) -> void {
   try {
     auto header = img::detectAndCreate(file);
     if (header->get_file_format() == img::ImageFormat::bmp) {
@@ -63,16 +62,16 @@ auto TerminalUI::encrypt_message(std::string const& file,
       assert(false);
 
     output_stream_ << "successfully encrypted " << file << '\n';
-  } catch (std::exception const& e) {
+  } catch (std::exception const &e) {
     output_stream_ << e.what() << '\n';
   }
 }
 
-auto TerminalUI::decrypt_message(std::string const& file) -> void {
+auto TerminalUI::decrypt_message(std::string const &file) -> void {
   try {
     auto header = img::detectAndCreate(file);
 
-    std::vector<std::uint8_t> result;
+    std::vector<uint8_t> result;
 
     if (header->get_file_format() == img::ImageFormat::bmp) {
       result = img::decode_format<img::ImageFormat::bmp>(file);
@@ -83,14 +82,13 @@ auto TerminalUI::decrypt_message(std::string const& file) -> void {
     std::string str(result.begin(), result.end());
 
     output_stream_ << "successfully decrypted:\t\t\t" << str << '\n';
-  } catch (std::exception const& e) {
+  } catch (std::exception const &e) {
     output_stream_ << e.what() << '\n';
   }
 }
 
-auto TerminalUI::check_encodable(std::string const& file,
-                                 std::vector<std::uint8_t> const& message)
-    -> void {
+auto TerminalUI::check_encodable(std::string const &file,
+                                 std::vector<uint8_t> const &message) -> void {
   auto header = img::detectAndCreate(file);
 
   bool ok = false;
@@ -110,7 +108,7 @@ auto TerminalUI::check_encodable(std::string const& file,
     output_stream_ << "cannot encode message to:" << file << '\n';
 }
 
-auto TerminalUI::run(int argc, char** argv) -> void {
+auto TerminalUI::run(int argc, char **argv) -> void {
   if (argc >= 2) {
     std::string first = argv[1];
     if ((first == "-i" || first == "--info") && argc == 3) {
@@ -118,8 +116,7 @@ auto TerminalUI::run(int argc, char** argv) -> void {
       show_info(file);
     } else if ((first == "-e" || first == "--encrypt") && argc == 4) {
       std::string file = argv[2];
-      std::vector<std::uint8_t> message(argv[3],
-                                        argv[3] + std::strlen(argv[3]));
+      std::vector<uint8_t> message(argv[3], argv[3] + std::strlen(argv[3]));
 
       encrypt_message(file, message);
     } else if ((first == "-d" || first == "--decrypt") && argc == 3) {
@@ -127,15 +124,11 @@ auto TerminalUI::run(int argc, char** argv) -> void {
       decrypt_message(file);
     } else if ((first == "-c" || first == "--check") && argc == 4) {
       std::string file = argv[2];
-      std::vector<std::uint8_t> message(argv[3],
-                                        argv[3] + std::strlen(argv[3]));
+      std::vector<uint8_t> message(argv[3], argv[3] + std::strlen(argv[3]));
 
       check_encodable(file, message);
     } else if (first == "-h" || first == "--help") {
       show_help();
-    } else if (first == "--helpmepls" && is_linux_machine()) {
-      auto res = std::system("vim --cmd \"help 42\"");
-      if (res) std::cerr << "rip :<<";
     } else {
       invalid_argument();
     }
@@ -148,5 +141,4 @@ auto TerminalUI::invalid_argument() -> void {
   output_stream_ << "invalid run. use -h or --help for help\n";
 }
 
-}  // namespace jr
-
+} // namespace jr

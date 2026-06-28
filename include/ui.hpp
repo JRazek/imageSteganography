@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -19,12 +20,12 @@ class TerminalUI {
   auto show_info(std::string const& file) -> void;
 
   auto encrypt_message(std::string const& file,
-                       std::vector<std::uint8_t> const& message) -> void;
+                       std::vector<uint8_t> const& message) -> void;
 
   auto decrypt_message(std::string const& file) -> void;
 
   auto check_encodable(std::string const& file,
-                       std::vector<std::uint8_t> const& message) -> void;
+                       std::vector<uint8_t> const& message) -> void;
 
   auto run(int argc, char** argv) -> void;
 
